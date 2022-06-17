@@ -10,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import master.flame.danmaku.danmaku.util.SystemClock;
@@ -153,6 +154,22 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        //     // 获取系统window支持的模式
+        //     val modes = getWindow().getWindowManager().getDefaultDisplay().getSupportedModes()
+        //     // 对获取的模式，基于刷新率的大小进行排序，从小到大排序
+        //     modes.sortBy {
+        //         it.refreshRate
+        //     }
+        //
+        //     window.let {
+        //         val lp = it.attributes
+        //         // 取出最小的那一个刷新率，直接设置给window
+        //         lp.preferredDisplayModeId = modes.first().modeId
+        //         it.attributes = lp
+        //     }
+        // }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         findViews();

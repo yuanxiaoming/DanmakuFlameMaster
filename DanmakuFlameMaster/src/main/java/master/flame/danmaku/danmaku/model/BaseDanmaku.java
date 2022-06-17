@@ -114,6 +114,7 @@ public abstract class BaseDanmaku {
     public int padding = 0;
 
     /**
+     * https://www.jianshu.com/p/1abdb97f7a4d
      * 弹幕优先级,0为低优先级,>0为高优先级不会被过滤器过滤
      */
     public byte priority = 0;

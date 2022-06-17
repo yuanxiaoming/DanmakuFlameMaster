@@ -12,6 +12,8 @@ import java.lang.ref.SoftReference;
 import master.flame.danmaku.danmaku.model.BaseDanmaku;
 
 /**
+ * 可自定义
+ * https://blog.csdn.net/g_ying_jie/article/details/73107814
  * Created by ch on 15-7-16.
  */
 public class SpannedCacheStuffer extends SimpleTextCacheStuffer {

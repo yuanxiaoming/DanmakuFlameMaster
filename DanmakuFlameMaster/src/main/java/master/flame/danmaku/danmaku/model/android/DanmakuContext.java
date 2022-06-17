@@ -709,6 +709,23 @@ public class DanmakuContext implements Cloneable {
         return this;
     }
 
+    /**
+     * https://github.com/yangzhiqian/DanmakuFlameMaster
+     * 例化DanmakuContext 时赋值
+     * Display display = getWindowManager().getDefaultDisplay();
+     * float refreshRate = display.getRefreshRate();
+     * int rate = (int) (1000 / refreshRate);
+     * mDanmakuContext.setFrameUpateRate(rate);
+     */
+    private int mUpdateRate = 16;
+    public int getFrameUpdateRate(){
+        return mUpdateRate;
+    }
+
+    public void setFrameUpdateRate(int rate){
+        mUpdateRate = rate;
+    }
+
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();

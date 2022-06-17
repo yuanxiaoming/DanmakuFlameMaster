@@ -15,7 +15,7 @@ public class DrawingCacheHolder {
     public Canvas canvas;
 
     public Bitmap bitmap;
-    
+
     public Bitmap[][] bitmapArray;
 
     public Object extra;
@@ -56,11 +56,12 @@ public class DrawingCacheHolder {
             mDensity = density;
             bitmap.setDensity(density);
         }
-        if (canvas == null){
+        if (canvas == null) {
             canvas = new Canvas(bitmap);
             canvas.setDensity(density);
-        }else
+        } else {
             canvas.setBitmap(bitmap);
+        }
     }
 
     public void erase() {
@@ -69,6 +70,7 @@ public class DrawingCacheHolder {
     }
 
     public synchronized void recycle() {
+        canvas = null;
         Bitmap bitmapReserve = bitmap;
         bitmap = null;
         width = height = 0;
@@ -80,7 +82,8 @@ public class DrawingCacheHolder {
     }
 
     @SuppressLint("NewApi")
-    public void splitWith(int dispWidth, int dispHeight, int maximumCacheWidth, int maximumCacheHeight) {
+    public void splitWith(int dispWidth, int dispHeight, int maximumCacheWidth,
+                          int maximumCacheHeight) {
         recycleBitmapArray();
         if (width <= 0 || height <= 0 || bitmap == null) {
             return;
@@ -95,7 +98,7 @@ public class DrawingCacheHolder {
         int averageWidth = width / xCount;
         int averageHeight = height / yCount;
         final Bitmap[][] bmpArray = new Bitmap[yCount][xCount];
-        if (canvas == null){
+        if (canvas == null) {
             canvas = new Canvas();
             if (mDensity > 0) {
                 canvas.setDensity(mDensity);

@@ -90,7 +90,7 @@ public class DanmakuTextureView extends TextureView implements IDanmakuView, IDa
         setOpaque(false);
         setWillNotCacheDrawing(true);
         setDrawingCacheEnabled(false);
-        setWillNotDraw(true);
+        setWillNotDraw(false);
         setSurfaceTextureListener(this);
         DrawHelper.useDrawColorToClearCanvas(true, true);
         mTouchHelper = DanmakuTouchHelper.instance(this);

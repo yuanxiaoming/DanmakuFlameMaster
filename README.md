@@ -3,9 +3,11 @@ DanmakuFlameMaster
 
 android上开源弹幕解析绘制引擎项目。[![Build Status](https://travis-ci.org/Bilibili/DanmakuFlameMaster.png?branch=master)](https://travis-ci.org/Bilibili/DanmakuFlameMaster)
 
+
 ### DFM Inside: 
 [![bili](https://raw.github.com/ctiao/ctiao.github.io/master/images/apps/bili.png?raw=true)](https://play.google.com/store/apps/details?id=tv.danmaku.bili)
 
+[![bili](https://windrunnerlihuan.com/2016/07/02/DanmakuFlameMaster%E7%AE%80%E5%8D%95%E5%88%86%E6%9E%90/)]
 - libndkbitmap.so(ndk)源码：https://github.com/Bilibili/NativeBitmapFactory
 - 开发交流群：314468823 (加入请注明DFM开发交流)
 

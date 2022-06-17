@@ -19,12 +19,13 @@ apply plugin: 'com.android.library'
 def SourcePath = 'src/main/'
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion "27.0.3"
+
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
 
     defaultConfig {
-        minSdkVersion 9
-        targetSdkVersion 25
+        minSdkVersion 21
+        targetSdkVersion 29
         versionName VERSION_NAME
         versionCode Integer.parseInt(VERSION_CODE)
     }
@@ -41,10 +42,6 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
     }
-}
-
-dependencies {
-    implementation 'com.android.support:support-annotations:28.0.0'
 }
 if (rootProject.file('gradle/gradle-mvn-push.gradle').exists()) {
     apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

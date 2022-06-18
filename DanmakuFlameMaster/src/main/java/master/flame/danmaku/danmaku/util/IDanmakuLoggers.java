@@ -11,5 +11,7 @@ public interface IDanmakuLoggers {
 
     void e(String tag, String msg);
 
-    void e(String tag, String format, Throwable args);
+    void e(String tag, Throwable t);
+
+    void e(String tag, String format, Throwable t);
 }

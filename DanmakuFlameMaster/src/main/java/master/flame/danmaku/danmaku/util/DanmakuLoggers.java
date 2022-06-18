@@ -50,15 +50,23 @@ public class DanmakuLoggers {
         }
     }
 
-    public static void e(String tag, String format, Throwable args) {
-        if (tag == null || format == null || args == null) {
+    public static void e(String tag, Throwable t) {
+        if (sLoggers == null) {
+            Log.e(tag, t.toString());
+        } else {
+            sLoggers.e(tag, t);
+        }
+    }
+
+    public static void e(String tag, String format, Throwable t) {
+        if (tag == null || format == null || t == null) {
             w(TAG, "param is null error!!!");
             return;
         }
         if (sLoggers == null) {
-            Log.e(tag, format + args.toString());
+            Log.e(tag, format + t.toString());
         } else {
-            sLoggers.e(tag, format, args);
+            sLoggers.e(tag, format, t);
         }
     }
 }

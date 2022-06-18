@@ -54,22 +54,28 @@ public class SimpleTextCacheStuffer extends BaseCacheStuffer {
         }
     }
 
-    protected void drawStroke(BaseDanmaku danmaku, String lineText, Canvas canvas, float left, float top, Paint paint) {
+    protected void drawStroke(BaseDanmaku danmaku, String lineText, Canvas canvas, float left,
+                              float top, Paint paint) {
         if (lineText != null) {
             canvas.drawText(lineText, left, top, paint);
         } else {
-            canvas.drawText(danmaku.text.toString(), left, top, paint);
+            if (danmaku.text != null) {
+                canvas.drawText(danmaku.text.toString(), left, top, paint);
+            }
         }
     }
 
-    protected void drawText(BaseDanmaku danmaku, String lineText, Canvas canvas, float left, float top, TextPaint paint, boolean fromWorkerThread) {
+    protected void drawText(BaseDanmaku danmaku, String lineText, Canvas canvas, float left,
+                            float top, TextPaint paint, boolean fromWorkerThread) {
         if (fromWorkerThread && danmaku instanceof SpecialDanmaku) {
             paint.setAlpha(255);
         }
         if (lineText != null) {
             canvas.drawText(lineText, left, top, paint);
         } else {
-            canvas.drawText(danmaku.text.toString(), left, top, paint);
+            if (danmaku.text != null) {
+                canvas.drawText(danmaku.text.toString(), left, top, paint);
+            }
         }
     }
 
@@ -83,14 +89,16 @@ public class SimpleTextCacheStuffer extends BaseCacheStuffer {
     }
 
     @Override
-    public void drawDanmaku(BaseDanmaku danmaku, Canvas canvas, float left, float top, boolean fromWorkerThread, AndroidDisplayer.DisplayerConfig displayerConfig) {
+    public void drawDanmaku(BaseDanmaku danmaku, Canvas canvas, float left, float top,
+                            boolean fromWorkerThread,
+                            AndroidDisplayer.DisplayerConfig displayerConfig) {
         float _left = left;
         float _top = top;
         left += danmaku.padding;
         top += danmaku.padding;
         if (danmaku.borderColor != 0) {
-            left += displayerConfig.BORDER_WIDTH;
-            top += displayerConfig.BORDER_WIDTH;
+            left += AndroidDisplayer.DisplayerConfig.BORDER_WIDTH;
+            top += AndroidDisplayer.DisplayerConfig.BORDER_WIDTH;
         }
 
         displayerConfig.definePaintParams(fromWorkerThread);
@@ -110,7 +118,8 @@ public class SimpleTextCacheStuffer extends BaseCacheStuffer {
                     drawStroke(danmaku, lines[0], canvas, strokeLeft, strokeTop, paint);
                 }
                 displayerConfig.applyPaintConfig(danmaku, paint, false);
-                drawText(danmaku, lines[0], canvas, left, top - paint.ascent(), paint, fromWorkerThread);
+                drawText(danmaku, lines[0], canvas, left, top - paint.ascent(), paint,
+                        fromWorkerThread);
             } else {
                 float textHeight = (danmaku.paintHeight - 2 * danmaku.padding) / lines.length;
                 for (int t = 0; t < lines.length; t++) {
@@ -128,7 +137,8 @@ public class SimpleTextCacheStuffer extends BaseCacheStuffer {
                         drawStroke(danmaku, lines[t], canvas, strokeLeft, strokeTop, paint);
                     }
                     displayerConfig.applyPaintConfig(danmaku, paint, false);
-                    drawText(danmaku, lines[t], canvas, left, t * textHeight + top - paint.ascent(), paint, fromWorkerThread);
+                    drawText(danmaku, lines[t], canvas, left, t * textHeight + top - paint.ascent(),
+                            paint, fromWorkerThread);
                 }
             }
         } else {

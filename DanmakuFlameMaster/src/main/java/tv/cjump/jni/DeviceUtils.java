@@ -4,7 +4,6 @@ package tv.cjump.jni;
 import android.os.Build;
 import android.os.Environment;
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,8 +11,10 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
 
-public class DeviceUtils {
+import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 
+public class DeviceUtils {
+    private static final String TAG = "DeviceUtils";
     public static final String ABI_X86 = "x86";
 
     public static final String ABI_MIPS = "mips";
@@ -55,13 +56,14 @@ public class DeviceUtils {
                         sArch = ARCH.ARM64;
                         break;
                     default:
-                        Log.e("NativeBitmapFactory", "libc.so is unknown arch: " + Integer.toHexString(machine));
+                        DanmakuLoggers
+                                .e(TAG, "libc.so is unknown arch: " + Integer.toHexString(machine));
                         break;
                 }
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+                DanmakuLoggers.e(TAG, e);
+            } catch (Throwable e) {
+                DanmakuLoggers.e(TAG, e);
             } finally {
                 if (fp != null) {
                     try {
@@ -82,8 +84,9 @@ public class DeviceUtils {
     public static String get_CPU_ABI2() {
         try {
             Field field = Build.class.getDeclaredField("CPU_ABI2");
-            if (field == null)
+            if (field == null) {
                 return null;
+            }
 
             Object fieldValue = field.get(null);
             if (!(fieldValue instanceof String)) {
@@ -100,8 +103,9 @@ public class DeviceUtils {
 
     public static boolean supportABI(String requestAbi) {
         String abi = get_CPU_ABI();
-        if (!TextUtils.isEmpty(abi) && abi.equalsIgnoreCase(requestAbi))
+        if (!TextUtils.isEmpty(abi) && abi.equalsIgnoreCase(requestAbi)) {
             return true;
+        }
 
         String abi2 = get_CPU_ABI2();
         return !TextUtils.isEmpty(abi2) && abi.equalsIgnoreCase(requestAbi);
@@ -125,14 +129,14 @@ public class DeviceUtils {
         String manufacturer = Build.MANUFACTURER;
         String productName = Build.PRODUCT;
         return manufacturer.equalsIgnoreCase("Xiaomi")
-            && productName.equalsIgnoreCase("dredd");
+                && productName.equalsIgnoreCase("dredd");
     }
 
     public static boolean isMagicBoxDevice() {
         String manufacturer = Build.MANUFACTURER;
         String productName = Build.PRODUCT;
         return manufacturer.equalsIgnoreCase("MagicBox")
-            && productName.equalsIgnoreCase("MagicBox");
+                && productName.equalsIgnoreCase("MagicBox");
     }
 
     public static boolean isProblemBoxDevice() {

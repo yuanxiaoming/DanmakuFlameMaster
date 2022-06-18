@@ -10,10 +10,8 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import master.flame.danmaku.danmaku.util.SystemClock;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -51,6 +49,7 @@ import master.flame.danmaku.danmaku.model.android.SpannedCacheStuffer;
 import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
 import master.flame.danmaku.danmaku.parser.IDataSource;
 import master.flame.danmaku.danmaku.util.IOUtils;
+import master.flame.danmaku.danmaku.util.SystemClock;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
@@ -93,7 +92,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         String url = "http://www.bilibili.com/favicon.ico";
                         InputStream inputStream = null;
                         Drawable drawable = mDrawable;
-                        if(drawable == null) {
+                        if (drawable == null) {
                             try {
                                 URLConnection urlConnection = new URL(url).openConnection();
                                 inputStream = urlConnection.getInputStream();
@@ -111,7 +110,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             drawable.setBounds(0, 0, 100, 100);
                             SpannableStringBuilder spannable = createSpannable(drawable);
                             danmaku.text = spannable;
-                            if(mDanmakuView != null) {
+                            if (mDanmakuView != null) {
                                 mDanmakuView.invalidateDanmaku(danmaku, false);
                             }
                             return;
@@ -143,11 +142,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
         @Override
         public void drawBackground(BaseDanmaku danmaku, Canvas canvas, float left, float top) {
             paint.setColor(0x8125309b);
-            canvas.drawRect(left + 2, top + 2, left + danmaku.paintWidth - 2, top + danmaku.paintHeight - 2, paint);
+            canvas.drawRect(left + 2, top + 2, left + danmaku.paintWidth - 2,
+                    top + danmaku.paintHeight - 2, paint);
         }
 
         @Override
-        public void drawStroke(BaseDanmaku danmaku, String lineText, Canvas canvas, float left, float top, Paint paint) {
+        public void drawStroke(BaseDanmaku danmaku, String lineText, Canvas canvas, float left,
+                               float top, Paint paint) {
             // 禁用描边绘制
         }
     }
@@ -236,11 +237,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         mDanmakuView = (IDanmakuView) findViewById(R.id.sv_danmaku);
         mContext = DanmakuContext.create();
-        mContext.setDanmakuStyle(IDisplayer.DANMAKU_STYLE_STROKEN, 3).setDuplicateMergingEnabled(false).setScrollSpeedFactor(1.2f).setScaleTextSize(1.2f)
-        .setCacheStuffer(new SpannedCacheStuffer(), mCacheStufferAdapter) // 图文混排使用SpannedCacheStuffer
+        mContext.setDanmakuStyle(IDisplayer.DANMAKU_STYLE_STROKEN, 3)
+                .setDuplicateMergingEnabled(false).setScrollSpeedFactor(1.2f).setScaleTextSize(1.2f)
+                .setCacheStuffer(new SpannedCacheStuffer(),
+                        mCacheStufferAdapter) // 图文混排使用SpannedCacheStuffer
 //        .setCacheStuffer(new BackgroundCacheStuffer())  // 绘制背景使用BackgroundCacheStuffer
-        .setMaximumLines(maxLinesPair)
-        .preventOverlapping(overlappingEnablePair).setDanmakuMargin(40);
+                .setMaximumLines(maxLinesPair)
+                .preventOverlapping(overlappingEnablePair).setDanmakuMargin(40);
         if (mDanmakuView != null) {
             mParser = createParser(this.getResources().openRawResource(R.raw.comments));
             mDanmakuView.setCallback(new master.flame.danmaku.controller.DrawHandler.Callback() {
@@ -351,10 +354,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if (v == mMediaController) {
             mMediaController.setVisibility(View.GONE);
         }
-        if (mDanmakuView == null || !mDanmakuView.isPrepared())
+        if (mDanmakuView == null || !mDanmakuView.isPrepared()) {
             return;
+        }
         if (v == mBtnRotate) {
-            setRequestedOrientation(getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE ? ActivityInfo.SCREEN_ORIENTATION_PORTRAIT : ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            setRequestedOrientation(
+                    getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE ?
+                            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT :
+                            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         } else if (v == mBtnHideDanmaku) {
             mDanmakuView.hide();
             // mPausedPosition = mDanmakuView.hideAndPauseDrawTask();
@@ -395,7 +402,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 SystemClock.sleep(20);
             }
         }
-    };
+    }
+
+    ;
 
     private void addDanmaku(boolean islive) {
         BaseDanmaku danmaku = mContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL);
@@ -441,7 +450,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         ImageSpan span = new ImageSpan(drawable);//ImageSpan.ALIGN_BOTTOM);
         spannableStringBuilder.setSpan(span, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         spannableStringBuilder.append("图文混排");
-        spannableStringBuilder.setSpan(new BackgroundColorSpan(Color.parseColor("#8A2233B1")), 0, spannableStringBuilder.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        spannableStringBuilder.setSpan(new BackgroundColorSpan(Color.parseColor("#8A2233B1")), 0,
+                spannableStringBuilder.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
         return spannableStringBuilder;
     }
 

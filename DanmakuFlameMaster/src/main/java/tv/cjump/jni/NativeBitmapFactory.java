@@ -7,17 +7,18 @@ import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.Log;
 
 import java.lang.reflect.Field;
 
-public class NativeBitmapFactory {
+import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 
+public class NativeBitmapFactory {
+    private static final String TAG = "NativeBitmapFactory";
     static Field nativeIntField = null;
 
     static boolean nativeLibLoaded = false;
     static boolean notLoadAgain = false;
-    
+
     public static boolean isInNativeAlloc() {
         return android.os.Build.VERSION.SDK_INT < 11 || (nativeLibLoaded && nativeIntField != null);
     }
@@ -46,7 +47,7 @@ public class NativeBitmapFactory {
             e.printStackTrace();
             notLoadAgain = true;
             nativeLibLoaded = false;
-        } catch (Error e) {
+        } catch (Throwable e) {
             e.printStackTrace();
             notLoadAgain = true;
             nativeLibLoaded = false;
@@ -68,18 +69,16 @@ public class NativeBitmapFactory {
                 }
             }
         }
-
-        Log.e("NativeBitmapFactory", "loaded" + nativeLibLoaded);
+        DanmakuLoggers.i(TAG, "loaded" + nativeLibLoaded);
     }
 
     public static synchronized void releaseLibs() {
-        boolean loaded =  nativeLibLoaded;
+        boolean loaded = nativeLibLoaded;
         nativeIntField = null;
         nativeLibLoaded = false;
         if (loaded) {
             release();
         }
-        // Log.e("NativeBitmapFactory", "released");
     }
 
     static void initField() {
@@ -88,7 +87,7 @@ public class NativeBitmapFactory {
             nativeIntField.setAccessible(true);
         } catch (NoSuchFieldException e) {
             nativeIntField = null;
-            e.printStackTrace();
+            DanmakuLoggers.e(TAG, e);
         }
     }
 
@@ -119,7 +118,7 @@ public class NativeBitmapFactory {
             }
             return result;
         } catch (Exception e) {
-            Log.e("NativeBitmapFactory", "exception:" + e.toString());
+            DanmakuLoggers.e(TAG, "exception:" + e.toString());
             return false;
         } catch (Error e) {
             return false;
@@ -146,14 +145,16 @@ public class NativeBitmapFactory {
     }
 
     public static Bitmap createBitmap(int width, int height, Bitmap.Config config) {
-        return createBitmap(width, height, config, config.equals(Bitmap.Config.ARGB_4444) || config.equals(Bitmap.Config.ARGB_8888));
+        return createBitmap(width, height, config,
+                config.equals(Bitmap.Config.ARGB_4444) || config.equals(Bitmap.Config.ARGB_8888));
     }
 
     public static void recycle(Bitmap bitmap) {
         bitmap.recycle();
     }
 
-    public static synchronized Bitmap createBitmap(int width, int height, Bitmap.Config config, boolean hasAlpha) {
+    public static synchronized Bitmap createBitmap(int width, int height, Bitmap.Config config,
+                                                   boolean hasAlpha) {
         if (!nativeLibLoaded || nativeIntField == null) {
             // Log.e("NativeBitmapFactory", "ndk bitmap create failed");
             return Bitmap.createBitmap(width, height, config);
@@ -161,7 +162,8 @@ public class NativeBitmapFactory {
         return createNativeBitmap(width, height, config, hasAlpha);
     }
 
-    private static Bitmap createNativeBitmap(int width, int height, Config config, boolean hasAlpha) {
+    private static Bitmap createNativeBitmap(int width, int height, Config config,
+                                             boolean hasAlpha) {
         int nativeConfig = getNativeConfig(config);
         // Log.e("NativeBitmapFactory", "nativeConfig:" + nativeConfig);
         // Log.e("NativeBitmapFactory", "create bitmap:" + bitmap);
@@ -176,9 +178,9 @@ public class NativeBitmapFactory {
     private static native boolean release();
 
     private static native Bitmap createBitmap(int width, int height, int nativeConfig,
-            boolean hasAlpha);
+                                              boolean hasAlpha);
 
     private static native Bitmap createBitmap19(int width, int height, int nativeConfig,
-            boolean hasAlpha);
+                                                boolean hasAlpha);
 
 }

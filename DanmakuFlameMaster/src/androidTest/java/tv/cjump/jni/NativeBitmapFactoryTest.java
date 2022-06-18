@@ -1,22 +1,22 @@
 package tv.cjump.jni;
 
 import android.app.ActivityManager;
-import android.app.Instrumentation;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Debug;
-import master.flame.danmaku.danmaku.util.SystemClock;
 import android.test.InstrumentationTestCase;
 import android.util.Log;
 
 import junit.framework.Assert;
-import junit.framework.TestCase;
 
 import java.util.ArrayList;
 import java.util.Locale;
+
+import master.flame.danmaku.danmaku.util.DanmakuLoggers;
+import master.flame.danmaku.danmaku.util.SystemClock;
 
 /**
  * Created by ch on 15-6-12.
@@ -37,7 +37,8 @@ public class NativeBitmapFactoryTest extends InstrumentationTestCase {
     }
 
     public void testNativeBitmap() {
-        Bitmap bitmap = NativeBitmapFactory.createBitmap(BITMAP_WIDTH, BITMAP_HEIGHT, Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = NativeBitmapFactory
+                .createBitmap(BITMAP_WIDTH, BITMAP_HEIGHT, Bitmap.Config.ARGB_8888);
         accessBitmap(bitmap);
         bitmap.recycle();
         gcAndWait();
@@ -55,11 +56,12 @@ public class NativeBitmapFactoryTest extends InstrumentationTestCase {
         appendValue(sb, "\n\n", "===== before create 50 NativeBitmap", "\n\n");
         updateHeapValue(sb);
         final String message = sb.toString();
-        Log.i(TAG, message);
+        DanmakuLoggers.i(TAG, message);
         sb = new StringBuilder();
         ArrayList<Bitmap> bitmaps = new ArrayList<>();
         for (int i = 0; i < 150; i++) {
-            Bitmap bitmap = NativeBitmapFactory.createBitmap(BITMAP_WIDTH, BITMAP_HEIGHT, Bitmap.Config.ARGB_8888);
+            Bitmap bitmap = NativeBitmapFactory
+                    .createBitmap(BITMAP_WIDTH, BITMAP_HEIGHT, Bitmap.Config.ARGB_8888);
             accessBitmap(bitmap);
             bitmaps.add(bitmap);
         }
@@ -71,14 +73,15 @@ public class NativeBitmapFactoryTest extends InstrumentationTestCase {
         gcAndWait();
     }
 
-    public Context getContext(){
+    public Context getContext() {
         return getInstrumentation().getTargetContext();
     }
 
     private void updateHeapValue(StringBuilder sb) {
 
         ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
-        ActivityManager activityManager = (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager activityManager =
+                (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
         activityManager.getMemoryInfo(mi);
         long availableMegs = mi.availMem;
         final Runtime runtime = Runtime.getRuntime();
@@ -98,7 +101,8 @@ public class NativeBitmapFactoryTest extends InstrumentationTestCase {
         sb = new StringBuilder();
         ArrayList<Bitmap> bitmaps = new ArrayList<>();
         for (int i = 0; i < 150; i++) {
-            Bitmap bitmap = Bitmap.createBitmap(BITMAP_WIDTH, BITMAP_HEIGHT, Bitmap.Config.ARGB_8888);
+            Bitmap bitmap =
+                    Bitmap.createBitmap(BITMAP_WIDTH, BITMAP_HEIGHT, Bitmap.Config.ARGB_8888);
             accessBitmap(bitmap);
             bitmaps.add(bitmap);
         }
@@ -114,9 +118,9 @@ public class NativeBitmapFactoryTest extends InstrumentationTestCase {
         NativeBitmapFactory.releaseLibs();
     }
 
-
     private void accessBitmap(Bitmap bitmap) {
-        boolean result = (bitmap != null && bitmap.getWidth() == BITMAP_WIDTH && bitmap.getHeight() == BITMAP_HEIGHT);
+        boolean result = (bitmap != null && bitmap.getWidth() == BITMAP_WIDTH &&
+                bitmap.getHeight() == BITMAP_HEIGHT);
         if (result) {
             if (android.os.Build.VERSION.SDK_INT >= 17 && !bitmap.isPremultiplied()) {
                 bitmap.setPremultiplied(true);
@@ -142,7 +146,8 @@ public class NativeBitmapFactoryTest extends InstrumentationTestCase {
     }
 
     private static void appendSize(StringBuilder sb, String prefix, long bytes, String suffix) {
-        String value = String.format(Locale.getDefault(), "%.2f", (float) bytes / BYTES_IN_MEGABYTE);
+        String value =
+                String.format(Locale.getDefault(), "%.2f", (float) bytes / BYTES_IN_MEGABYTE);
         appendValue(sb, prefix, value + " MB", suffix);
     }
 

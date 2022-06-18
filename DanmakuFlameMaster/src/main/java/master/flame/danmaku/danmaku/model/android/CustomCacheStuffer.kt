@@ -20,7 +20,7 @@ class CustomCacheStuffer(val context: Context) : SpannedCacheStuffer() {
             }
             danmaku.paintWidth = customPower.bitmap.width.toFloat()
             danmaku.paintHeight = customPower.bitmap.height.toFloat()
-            //MLog.info(TAG, "measure " + danmaku.text)
+            //DanmakuLoggers.i(TAG, "measure " + danmaku.text)
         } else {
             super.measure(danmaku, paint, fromWorkerThread);
         }
@@ -38,7 +38,7 @@ class CustomCacheStuffer(val context: Context) : SpannedCacheStuffer() {
             val rect = Rect(0, 0, gunNewPower.bitmap.width,
                 gunNewPower.bitmap.height)
             canvas?.drawBitmap(gunNewPower.bitmap, rect, rect, Paint(Paint.ANTI_ALIAS_FLAG))
-            //MLog.info(TAG, "drawDanmaku " + danmaku.text)
+            //DanmakuLoggers.i(TAG, "drawDanmaku " + danmaku.text)
         } else {
             super.drawDanmaku(danmaku, canvas, left, top, fromWorkerThread, displayerConfig)
         }

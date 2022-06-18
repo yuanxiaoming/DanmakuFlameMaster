@@ -44,11 +44,9 @@ public class NativeBitmapFactory {
                 nativeLibLoaded = false;
             }
         } catch (Exception e) {
-            e.printStackTrace();
             notLoadAgain = true;
             nativeLibLoaded = false;
         } catch (Throwable e) {
-            e.printStackTrace();
             notLoadAgain = true;
             nativeLibLoaded = false;
         }

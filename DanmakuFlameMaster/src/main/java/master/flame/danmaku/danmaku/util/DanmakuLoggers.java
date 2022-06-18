@@ -51,7 +51,7 @@ public class DanmakuLoggers {
     }
 
     public static void e(String tag, String format, Throwable args) {
-        if (obj == null || format == null || args == null) {
+        if (tag == null || format == null || args == null) {
             w(TAG, "param is null error!!!");
             return;
         }

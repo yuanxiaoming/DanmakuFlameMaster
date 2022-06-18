@@ -52,14 +52,14 @@ public class DanmakuTouchHelper {
 
                 @Override
                 public void onLongPress(MotionEvent event) {
-                    // IDanmakuView.OnDanmakuClickListener onDanmakuClickListener =
-                    //         danmakuView.getOnDanmakuClickListener();
+                    IDanmakuView.OnDanmakuClickListener onDanmakuClickListener =
+                            danmakuView.getOnDanmakuClickListener();
                     if (onDanmakuClickListener == null) {
                         return;
                     }
                     mXOff = danmakuView.getXOff();
                     mYOff = danmakuView.getYOff();
-                    IDanmakus clickDanmakus = touchHitDanmaku(event.getX(), event.getY());
+                    //IDanmakus clickDanmakus = touchHitDanmaku(event.getX(), event.getY());
                     if (null != clickDanmakus && !clickDanmakus.isEmpty()) {
                         performDanmakuClick(clickDanmakus, true);
                     }
@@ -70,7 +70,7 @@ public class DanmakuTouchHelper {
         this.danmakuView = danmakuView;
         this.mDanmakuBounds = new RectF();
         this.mTouchDelegate =
-                new GestureDetector(((View) danmakuView).getContext(), mOnGestureListener);
+                new GestureDetector(((View) danmakuView).getContext().getApplicationContext(), mOnGestureListener);
     }
 
     public static synchronized DanmakuTouchHelper instance(IDanmakuView danmakuView) {

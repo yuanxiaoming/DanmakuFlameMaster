@@ -14,7 +14,6 @@ class CustomCacheStuffer(val context: Context, val danmakuView: IDanmakuView?) :
 () {
 
     //private val TAG = "CustomCacheStuffer"
-    private var iCustomInvalidateDanmaku: ICustomInvalidateDanmaku? = null
 
     override fun measure(danmaku: BaseDanmaku?, paint: TextPaint?, fromWorkerThread: Boolean) {
         val customPower = danmaku?.tag as? ICustomPower
@@ -42,23 +41,15 @@ class CustomCacheStuffer(val context: Context, val danmakuView: IDanmakuView?) :
             val rect = Rect(0, 0, customPower.bitmap.width,
                 customPower.bitmap.height)
             canvas?.drawBitmap(customPower.bitmap, rect, rect, Paint(Paint.ANTI_ALIAS_FLAG))
-            if (customPower.needInvalidate()) {
-                customPower.setICustomInvalidateCallBack(getICustomInvalidateCallBack(danmaku))
+            if (customPower.needInvalidate() && customPower.iCustomInvalidateCallBack == null) {
+                customPower.iCustomInvalidateCallBack = ICustomInvalidateDanmaku { _, remeasure ->
+                    danmakuView?.invalidateDanmaku(danmaku, remeasure)
+
+                }
             }
             //DanmakuLoggers.i(TAG, "drawDanmaku " + danmaku.text)
         } else {
             super.drawDanmaku(danmaku, canvas, left, top, fromWorkerThread, displayerConfig)
         }
-    }
-
-    private fun getICustomInvalidateCallBack(danmaku: BaseDanmaku?): ICustomInvalidateDanmaku {
-        if (iCustomInvalidateDanmaku == null) {
-            iCustomInvalidateDanmaku = ICustomInvalidateDanmaku { _, remeasure ->
-                if (danmaku != null) {
-                    danmakuView?.invalidateDanmaku(danmaku, remeasure)
-                }
-            }
-        }
-        return iCustomInvalidateDanmaku as ICustomInvalidateDanmaku
     }
 }

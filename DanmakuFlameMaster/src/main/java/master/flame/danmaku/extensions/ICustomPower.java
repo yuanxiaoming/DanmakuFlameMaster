@@ -13,6 +13,8 @@ public interface ICustomPower {
 
     void setICustomInvalidateCallBack(ICustomInvalidateDanmaku iCustomInvalidateDanmaku);
 
+    ICustomInvalidateDanmaku getICustomInvalidateCallBack();
+
     //是否需要动态刷新
     boolean needInvalidate();
 

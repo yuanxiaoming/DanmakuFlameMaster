@@ -93,7 +93,7 @@ public class DanmakuActivity extends Activity {
 
 
     private void initNormalDanmuView() {
-        mNormalDanmakuContext = DanmakuContext.create();
+        mNormalDanmakuContext = DanmakuContext.create(mNormalDanmakuView);
         mNormalDanmakuContext.cachingPolicy.mAllowDelayInCacheModel = true;
         if (mDanmakuType == TYPE_DANMAKU_GL_VIEW) {
             mNormalDanmakuContext.mDisplayer = new AndroidGLDisplayer(mNormalDanmakuContext);

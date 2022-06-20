@@ -60,7 +60,8 @@ public class FakeDanmakuView extends DanmakuView implements DrawHandler.Callback
                     } else if (time > edTime) {
                         return IDanmakus.Consumer.ACTION_BREAK;
                     }
-                    BaseDanmaku item = mContext.mDanmakuFactory.createDanmaku(danmaku.getType(), mContext);
+                    BaseDanmaku item =
+                            mContext.mDanmakuFactory.createDanmaku(danmaku.getType(), mContext);
                     if (item != null) {
                         item.setTime(danmaku.getTime());
                         DanmakuUtils.fillText(item, danmaku.text);
@@ -74,11 +75,16 @@ public class FakeDanmakuView extends DanmakuView implements DrawHandler.Callback
                             item.duration = new Duration(sdanmaku.getDuration());
                             item.rotationZ = sdanmaku.rotateZ;
                             item.rotationY = sdanmaku.rotationY;
-                            ((SpecialDanmaku) item).isQuadraticEaseOut = sdanmaku.isQuadraticEaseOut;
+                            ((SpecialDanmaku) item).isQuadraticEaseOut =
+                                    sdanmaku.isQuadraticEaseOut;
 
                             mContext.mDanmakuFactory.fillTranslationData(item, sdanmaku.beginX,
-                                    sdanmaku.beginY, sdanmaku.endX, sdanmaku.endY, sdanmaku.translationDuration, sdanmaku.translationStartDelay, mDispScaleX, mDispScaleY);
-                            mContext.mDanmakuFactory.fillAlphaData(item, sdanmaku.beginAlpha, sdanmaku.endAlpha, item.getDuration());
+                                    sdanmaku.beginY, sdanmaku.endX, sdanmaku.endY,
+                                    sdanmaku.translationDuration, sdanmaku.translationStartDelay,
+                                    mDispScaleX, mDispScaleY);
+                            mContext.mDanmakuFactory
+                                    .fillAlphaData(item, sdanmaku.beginAlpha, sdanmaku.endAlpha,
+                                            item.getDuration());
 
 //                            mContext.mDanmakuFactory.fillLinePathData(item, points, mDispScaleX,
 //                                    mDispScaleY);  // FIXME
@@ -116,7 +122,8 @@ public class FakeDanmakuView extends DanmakuView implements DrawHandler.Callback
 
         @Override
         protected float getViewportSizeFactor() {
-            float scale = DanmakuFactory.COMMON_DANMAKU_DURATION * mViewWidth / DanmakuFactory.BILI_PLAYER_WIDTH;
+            float scale = DanmakuFactory.COMMON_DANMAKU_DURATION * mViewWidth /
+                    DanmakuFactory.BILI_PLAYER_WIDTH;
             float factor = 1.1f;
             return mContext.mDanmakuFactory.MAX_DANMAKU_DURATION * factor / scale;
         }
@@ -199,7 +206,8 @@ public class FakeDanmakuView extends DanmakuView implements DrawHandler.Callback
                     if (mScale == 1f) {
                         bitmap = bufferBitmap;
                     } else {
-                        bitmap = Bitmap.createScaledBitmap(bufferBitmap, (int) (mWidth * mScale), (int) (mHeight * mScale), true);
+                        bitmap = Bitmap.createScaledBitmap(bufferBitmap, (int) (mWidth * mScale),
+                                (int) (mHeight * mScale), true);
                         recycle = true;
                     }
                     onFrameAvailableListener.onFrameAvailable(curr, bitmap);
@@ -262,10 +270,11 @@ public class FakeDanmakuView extends DanmakuView implements DrawHandler.Callback
         DanmakuContext configCopy;
         try {
             configCopy = (DanmakuContext) config.clone();
-            configCopy.resetContext();
+            configCopy.resetContext(this);
             configCopy.transparency = AlphaValue.MAX;
             configCopy.setDanmakuTransparency(config.transparency / (float) AlphaValue.MAX);
-            configCopy.mGlobalFlagValues.FILTER_RESET_FLAG = config.mGlobalFlagValues.FILTER_RESET_FLAG;
+            configCopy.mGlobalFlagValues.FILTER_RESET_FLAG =
+                    config.mGlobalFlagValues.FILTER_RESET_FLAG;
             configCopy.setDanmakuSync(null);
             configCopy.unregisterAllConfigChangedCallbacks();
             configCopy.mGlobalFlagValues.updateAll();
@@ -315,7 +324,8 @@ public class FakeDanmakuView extends DanmakuView implements DrawHandler.Callback
         }
         mFrameIntervalMills = 1000 / frameRate;
         setCallback(this);
-        long beginMills = Math.max(0, mExpectBeginMills - getConfig().mDanmakuFactory.MAX_DANMAKU_DURATION * 3 / 2);
+        long beginMills = Math.max(0,
+                mExpectBeginMills - getConfig().mDanmakuFactory.MAX_DANMAKU_DURATION * 3 / 2);
         mOuterTimer = new DanmakuTimer(beginMills);
         start(beginMills);
     }

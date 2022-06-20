@@ -1,4 +1,4 @@
-package master.flame.danmaku.danmaku.model;
+package master.flame.danmaku.extensions;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -10,5 +10,10 @@ public interface ICustomPower {
 
     //返回自定义生成的图片绘制
     Bitmap getBitmap();
+
+    void setICustomInvalidateCallBack(ICustomInvalidateDanmaku iCustomInvalidateDanmaku);
+
+    //是否需要动态刷新
+    boolean needInvalidate();
 
 }

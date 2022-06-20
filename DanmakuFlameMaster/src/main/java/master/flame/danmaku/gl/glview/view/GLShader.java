@@ -2,7 +2,6 @@ package master.flame.danmaku.gl.glview.view;
 
 import android.content.Context;
 import android.opengl.GLES20;
-import android.support.annotation.NonNull;
 
 import java.io.InputStream;
 
@@ -14,11 +13,13 @@ public final class GLShader {
     private int mVertexShader;
     private int mFragmentShader;
 
-    public GLShader(@NonNull String vertexShaderFileName, @NonNull String fragmentShaderFileName, Context context) {
-        this(loadFromAssetsFile(vertexShaderFileName, context), loadFromAssetsFile(fragmentShaderFileName, context));
+    public GLShader(String vertexShaderFileName, String fragmentShaderFileName,
+                    Context context) {
+        this(loadFromAssetsFile(vertexShaderFileName, context),
+                loadFromAssetsFile(fragmentShaderFileName, context));
     }
 
-    public GLShader(@NonNull String vertexShader, @NonNull String fragmentShader) {
+    public GLShader(String vertexShader, String fragmentShader) {
         this.mVertexShaderProgram = vertexShader;
         this.mFragmentShaderProgram = fragmentShader;
     }
@@ -43,7 +44,6 @@ public final class GLShader {
         }
         mShaderProgram = program;
     }
-
 
     public void use() {
         GLES20.glUseProgram(mShaderProgram);
@@ -71,7 +71,6 @@ public final class GLShader {
         GLES20.glDeleteShader(mFragmentShader);
         GLES20.glDeleteProgram(mShaderProgram);
     }
-
 
     private void checkGlError(String op) {
         int error = GLES20.glGetError();

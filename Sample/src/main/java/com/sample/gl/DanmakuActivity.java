@@ -31,14 +31,14 @@ import master.flame.danmaku.danmaku.model.android.Danmakus;
 import master.flame.danmaku.danmaku.model.android.SpannedCacheStuffer;
 import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
 import master.flame.danmaku.danmaku.parser.IDataSource;
-import master.flame.danmaku.gl.AndroidGLDisplayer;
 import master.flame.danmaku.gl.utils.SpeedsMeasurement;
 
 public class DanmakuActivity extends Activity {
     public static final String TYPE = "danmaku_type";
     public static final int TYPE_DANMAKU_VIEW = 1;
     public static final int TYPE_DANMAKU_GL_VIEW = 2;
-    private static final String XML_PARSE_LOAD = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><i><maxlimit>800</maxlimit></i>";
+    private static final String XML_PARSE_LOAD =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?><i><maxlimit>800</maxlimit></i>";
 
     protected IDanmakuView mNormalDanmakuView;
     private DanmakuContext mNormalDanmakuContext;
@@ -70,7 +70,6 @@ public class DanmakuActivity extends Activity {
 
     }
 
-
     @Override
     public void onResume() {
         super.onResume();
@@ -91,13 +90,9 @@ public class DanmakuActivity extends Activity {
         mNormalDanmakuView.release();
     }
 
-
     private void initNormalDanmuView() {
         mNormalDanmakuContext = DanmakuContext.create(mNormalDanmakuView);
         mNormalDanmakuContext.cachingPolicy.mAllowDelayInCacheModel = true;
-        if (mDanmakuType == TYPE_DANMAKU_GL_VIEW) {
-            mNormalDanmakuContext.mDisplayer = new AndroidGLDisplayer(mNormalDanmakuContext);
-        }
         mNormalDanmakuContext.setDanmakuStyle(IDisplayer.DANMAKU_STYLE_SHADOW, 10)
                 .setMaximumVisibleSizeInScreen(200)
                 // 图文混排使用SpannedCacheStuffer;
@@ -161,6 +156,7 @@ public class DanmakuActivity extends Activity {
         ByteArrayInputStream is = new ByteArrayInputStream(in.getBytes("UTF-8"));
         return is;
     }
+
     private static class FrequencyDanmakuSender implements TextWatcher, Runnable {
         private int mSpeed = 0;
         private boolean mRunning = false;
@@ -226,7 +222,8 @@ public class DanmakuActivity extends Activity {
                 } else if ("4".equals(position)) {
                     danmaType = BaseDanmaku.TYPE_SCROLL_LR;
                 }
-                BaseDanmaku danmaku = mNormalDanmakuView.getConfig().mDanmakuFactory.createDanmaku(danmaType);
+                BaseDanmaku danmaku =
+                        mNormalDanmakuView.getConfig().mDanmakuFactory.createDanmaku(danmaType);
                 if (danmaku == null) {
                     return;
                 }
@@ -263,7 +260,8 @@ public class DanmakuActivity extends Activity {
         }
 
         public static String getRandomString(int length) {
-            String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?$$$%%%###@@@!!!&&&***^^^???";
+            String str =
+                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?$$$%%%###@@@!!!&&&***^^^???";
             Random random = new Random();
             StringBuffer sb = new StringBuffer();
             for (int i = 0; i < length; i++) {

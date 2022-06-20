@@ -156,11 +156,13 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
         @Override
         public void drawBackground(BaseDanmaku danmaku, Canvas canvas, float left, float top) {
             paint.setColor(0x8125309b);
-            canvas.drawRect(left + 2, top + 2, left + danmaku.paintWidth - 2, top + danmaku.paintHeight - 2, paint);
+            canvas.drawRect(left + 2, top + 2, left + danmaku.paintWidth - 2,
+                    top + danmaku.paintHeight - 2, paint);
         }
 
         @Override
-        public void drawStroke(BaseDanmaku danmaku, String lineText, Canvas canvas, float left, float top, Paint paint) {
+        public void drawStroke(BaseDanmaku danmaku, String lineText, Canvas canvas, float left,
+                               float top, Paint paint) {
             // 禁用描边绘制
         }
     }
@@ -186,7 +188,8 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
         private BaseDanmaku danmaku;
         private Bitmap bitmap;
 
-        public MyImageWare(String imageUri, BaseDanmaku danmaku, int width, int height, IDanmakuView danmakuView) {
+        public MyImageWare(String imageUri, BaseDanmaku danmaku, int width, int height,
+                           IDanmakuView danmakuView) {
             this(imageUri, new ImageSize(width, height), ViewScaleType.FIT_INSIDE);
             if (danmaku == null) {
                 throw new IllegalArgumentException("danmaku may not be null");
@@ -225,7 +228,9 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
 //                return true;
 //            }
             if (this.danmaku.text.toString().contains("textview")) {
-                Log.e("DFM", (SystemClock.uptimeMillis() - this.start) + "ms=====> inside" + danmaku.tag + ":" + danmaku.getActualTime() + ",url: bitmap" + (bitmap == null));
+                Log.e("DFM", (SystemClock.uptimeMillis() - this.start) + "ms=====> inside" +
+                        danmaku.tag + ":" + danmaku.getActualTime() + ",url: bitmap" +
+                        (bitmap == null));
             }
             this.bitmap = bitmap;
             IDanmakuView danmakuView = danmakuViewRef.get();
@@ -240,7 +245,8 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Create global configuration and initialize ImageLoader with this config
-        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).memoryCache(new LruMemoryCache(2 * 1024 * 1024))
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this)
+                .memoryCache(new LruMemoryCache(2 * 1024 * 1024))
                 .memoryCacheSize(2 * 1024 * 1024)
                 .memoryCacheSizePercentage(13).build(); // default
         ImageLoader.getInstance().init(config);
@@ -308,23 +314,31 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
         overlappingEnablePair.put(BaseDanmaku.TYPE_FIX_TOP, true);
 
         mDanmakuView = (IDanmakuView) findViewById(R.id.sv_danmaku);
-        mContext = DanmakuContext.create();
+        mContext = DanmakuContext.create(mDanmakuView);
 
-        mIconWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, getResources().getDisplayMetrics());
+        mIconWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f,
+                getResources().getDisplayMetrics());
         mContext.setDanmakuBold(true);
-        mContext.setDanmakuStyle(IDisplayer.DANMAKU_STYLE_STROKEN, 3).setDuplicateMergingEnabled(false).setScrollSpeedFactor(1.2f).setScaleTextSize(1.2f)
+        mContext.setDanmakuStyle(IDisplayer.DANMAKU_STYLE_STROKEN, 3)
+                .setDuplicateMergingEnabled(false).setScrollSpeedFactor(1.2f).setScaleTextSize(1.2f)
                 .setCacheStuffer(new ViewCacheStuffer<MyViewHolder>() {
 
                     @Override
                     public MyViewHolder onCreateViewHolder(int viewType) {
                         Log.e("DFM", "onCreateViewHolder:" + viewType);
-                        return new MyViewHolder(View.inflate(getApplicationContext(), R.layout.layout_view_cache, null));
+                        return new MyViewHolder(
+                                View.inflate(getApplicationContext(), R.layout.layout_view_cache,
+                                        null));
                     }
 
                     @Override
-                    public void onBindViewHolder(int viewType, MyViewHolder viewHolder, BaseDanmaku danmaku, AndroidDisplayer.DisplayerConfig displayerConfig, TextPaint paint) {
-                        if (paint != null)
+                    public void onBindViewHolder(int viewType, MyViewHolder viewHolder,
+                                                 BaseDanmaku danmaku,
+                                                 AndroidDisplayer.DisplayerConfig displayerConfig,
+                                                 TextPaint paint) {
+                        if (paint != null) {
                             viewHolder.mText.getPaint().set(paint);
+                        }
                         viewHolder.mText.setText(danmaku.text);
                         viewHolder.mText.setTextColor(danmaku.textColor);
                         viewHolder.mText.setTextSize(TypedValue.COMPLEX_UNIT_PX, danmaku.textSize);
@@ -333,13 +347,15 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
                         if (imageWare != null) {
                             bitmap = imageWare.bitmap;
                             if (danmaku.text.toString().contains("textview")) {
-                                Log.e("DFM", "onBindViewHolder======> bitmap:" + (bitmap == null) + "  " + danmaku.tag + "url:" + imageWare.getImageUri());
+                                Log.e("DFM", "onBindViewHolder======> bitmap:" + (bitmap == null) +
+                                        "  " + danmaku.tag + "url:" + imageWare.getImageUri());
                             }
                         }
                         if (bitmap != null) {
                             viewHolder.mIcon.setImageBitmap(bitmap);
                             if (danmaku.text.toString().contains("textview")) {
-                                Log.e("DFM", "onBindViewHolder======>" + danmaku.tag + "url:" + imageWare.getImageUri());
+                                Log.e("DFM", "onBindViewHolder======>" + danmaku.tag + "url:" +
+                                        imageWare.getImageUri());
                             }
                         } else {
                             viewHolder.mIcon.setImageResource(R.drawable.ic_launcher);
@@ -356,9 +372,11 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
                         Log.e("DFM", "releaseResource url:" + danmaku.text);
                     }
 
+                    String[] avatars =
+                            {"http://i0.hdslb.com/bfs/face/e13fcb94342c325debb2d3a1d9e503ac4f083514.jpg@45w_45h.webp",
+                                    "http://i0.hdslb.com/bfs/bangumi/2558e1341d2e934a7e06bb7d92551fef5c82c172.jpg@72w_72h.webp",
+                                    "http://i0.hdslb.com/bfs/face/128edefeef7ce9cfc443a2489d8a1c7d44d88b80.jpg@72w_72h.webp"};
 
-                    String[] avatars = { "http://i0.hdslb.com/bfs/face/e13fcb94342c325debb2d3a1d9e503ac4f083514.jpg@45w_45h.webp",
-                            "http://i0.hdslb.com/bfs/bangumi/2558e1341d2e934a7e06bb7d92551fef5c82c172.jpg@72w_72h.webp", "http://i0.hdslb.com/bfs/face/128edefeef7ce9cfc443a2489d8a1c7d44d88b80.jpg@72w_72h.webp"};
                     @Override
                     public void prepare(BaseDanmaku danmaku, boolean fromWorkerThread) {
                         if (danmaku.isTimeOut()) {
@@ -367,11 +385,13 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
                         MyImageWare imageWare = (MyImageWare) danmaku.tag;
                         if (imageWare == null) {
                             String avatar = avatars[danmaku.index % avatars.length];
-                            imageWare = new MyImageWare(avatar, danmaku, mIconWidth, mIconWidth, mDanmakuView);
+                            imageWare = new MyImageWare(avatar, danmaku, mIconWidth, mIconWidth,
+                                    mDanmakuView);
                             danmaku.setTag(imageWare);
                         }
                         if (danmaku.text.toString().contains("textview")) {
-                            Log.e("DFM", "onAsyncLoadResource======>" + danmaku.tag + "url:" + imageWare.getImageUri());
+                            Log.e("DFM", "onAsyncLoadResource======>" + danmaku.tag + "url:" +
+                                    imageWare.getImageUri());
                         }
                         ImageLoader.getInstance().displayImage(imageWare.getImageUri(), imageWare);
                     }
@@ -491,10 +511,14 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
         if (v == mMediaController) {
             mMediaController.setVisibility(View.GONE);
         }
-        if (mDanmakuView == null || !mDanmakuView.isPrepared())
+        if (mDanmakuView == null || !mDanmakuView.isPrepared()) {
             return;
+        }
         if (v == mBtnRotate) {
-            setRequestedOrientation(getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE ? ActivityInfo.SCREEN_ORIENTATION_PORTRAIT : ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            setRequestedOrientation(
+                    getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE ?
+                            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT :
+                            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         } else if (v == mBtnHideDanmaku) {
             mDanmakuView.hide();
             // mPausedPosition = mDanmakuView.hideAndPauseDrawTask();
@@ -566,7 +590,9 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
         drawable.setBounds(0, 0, 100, 100);
         //SpannableStringBuilder spannable = createSpannable(drawable);
         danmaku.text = "这是文本，图片在textview左侧";
-        danmaku.setTag(new MyImageWare("http://i0.hdslb.com/bfs/face/084bd13eb5dc51a64674085bb28e958ecd5addd0.jpg@180w_180h.webp", danmaku, mIconWidth, mIconWidth, mDanmakuView));
+        danmaku.setTag(new MyImageWare(
+                "http://i0.hdslb.com/bfs/face/084bd13eb5dc51a64674085bb28e958ecd5addd0.jpg@180w_180h.webp",
+                danmaku, mIconWidth, mIconWidth, mDanmakuView));
         danmaku.padding = 5;
         danmaku.priority = 1;  // 一定会显示, 一般用于本机发送的弹幕
         danmaku.isLive = islive;
@@ -584,7 +610,8 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
         ImageSpan span = new ImageSpan(drawable);//ImageSpan.ALIGN_BOTTOM);
         spannableStringBuilder.setSpan(span, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         spannableStringBuilder.append("图文混排");
-        spannableStringBuilder.setSpan(new BackgroundColorSpan(Color.parseColor("#8A2233B1")), 0, spannableStringBuilder.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        spannableStringBuilder.setSpan(new BackgroundColorSpan(Color.parseColor("#8A2233B1")), 0,
+                spannableStringBuilder.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
         return spannableStringBuilder;
     }
 

@@ -18,6 +18,8 @@ package master.flame.danmaku.danmaku.model;
 
 import android.util.SparseArray;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public abstract class BaseDanmaku {
 
     public final static String DANMAKU_BR_CHAR = "/n";
@@ -41,10 +43,16 @@ public abstract class BaseDanmaku {
     public final static int FLAG_REQUEST_REMEASURE = 0x1;
     public final static int FLAG_REQUEST_INVALIDATE = 0x2;
 
+    private static final AtomicInteger sIdincrement = new AtomicInteger(0);
+    /**
+     * 弹幕id,每一个实例都是不一样的
+     */
+    public final int id = sIdincrement.incrementAndGet();
+
     /**
      * 显示时间(毫秒)
      */
-    private long time;
+    public long time;
 
     /**
      * 偏移时间
@@ -114,7 +122,6 @@ public abstract class BaseDanmaku {
     public int padding = 0;
 
     /**
-     * https://www.jianshu.com/p/1abdb97f7a4d
      * 弹幕优先级,0为低优先级,>0为高优先级不会被过滤器过滤
      */
     public byte priority = 0;

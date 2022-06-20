@@ -177,6 +177,13 @@ public abstract class BaseDanmaku {
     public IDrawingCache<?> cache;
 
     /**
+     * gl 绘制时的纹理id，如果没有加载则为0，销毁后也为0，纹理设置为无效也为0
+     */
+    public int mGLTextureId;
+    public float mTextureWidth = 0;
+    public float mTextureHeight = 0;
+
+    /**
      * 是否是直播弹幕
      */
     public boolean isLive;
@@ -307,8 +314,9 @@ public abstract class BaseDanmaku {
         if (b) {
             this.visibleResetFlag = flags.VISIBLE_RESET_FLAG;
             this.visibility = VISIBLE;
-        } else
+        } else {
             this.visibility = INVISIBLE;
+        }
     }
 
     public abstract void layout(IDisplayer displayer, float x, float y);

@@ -10,8 +10,8 @@ import master.flame.danmaku.danmaku.model.BaseDanmaku
 import master.flame.danmaku.danmaku.model.android.AndroidDisplayer
 import master.flame.danmaku.danmaku.model.android.SpannedCacheStuffer
 
-class CustomCacheStuffer(val context: Context, val danmakuView: IDanmakuView?) : SpannedCacheStuffer
-() {
+class CustomCacheStuffer(val context: Context, private val danmakuView: IDanmakuView?) :
+    SpannedCacheStuffer() {
 
     //private val TAG = "CustomCacheStuffer"
 

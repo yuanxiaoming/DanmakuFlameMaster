@@ -667,8 +667,10 @@ public class DrawHandler extends Handler {
                 displayMetrics.scaledDensity);
         mDisp.resetSlopPixel(mContext.scaleTextSize);
         mDisp.setHardwareAccelerated(isHardwareAccelerated);
-        mContext.cachingPolicy.mCacheDrawEnabled = useDrwaingCache || mDisp instanceof AndroidGLDisplayer;
-        IDrawTask task = mDisp instanceof AndroidGLDisplayer ? new GLDrawTask(timer, mContext, taskListener) : useDrwaingCache ?
+        mContext.cachingPolicy.mCacheDrawEnabled =
+                useDrwaingCache || mDisp instanceof AndroidGLDisplayer;
+        IDrawTask task = mDisp instanceof AndroidGLDisplayer ?
+                new GLDrawTask(timer, mContext, taskListener) : useDrwaingCache ?
                 new CacheManagingDrawTask(timer, mContext, taskListener)
                 : new DrawTask(timer, mContext, taskListener);
         task.setParser(mParser);

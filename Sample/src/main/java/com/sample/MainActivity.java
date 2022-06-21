@@ -23,6 +23,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.PopupWindow;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import java.io.IOException;
@@ -50,6 +51,8 @@ import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
 import master.flame.danmaku.danmaku.parser.IDataSource;
 import master.flame.danmaku.danmaku.util.IOUtils;
 import master.flame.danmaku.danmaku.util.SystemClock;
+import master.flame.danmaku.ui.widget.DanmakuSurfaceView;
+import master.flame.danmaku.ui.widget.DanmakuTextureView;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
@@ -222,6 +225,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mBtnSendDanmaku.setOnClickListener(this);
         mBtnSendDanmakuTextAndImage.setOnClickListener(this);
         mBtnSendDanmakus.setOnClickListener(this);
+        findViewById(R.id.sv_image).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "SSS", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         // VideoView
         VideoView mVideoView = (VideoView) findViewById(R.id.videoview);
@@ -245,6 +254,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 .setMaximumLines(maxLinesPair)
                 .preventOverlapping(overlappingEnablePair).setDanmakuMargin(40);
         if (mDanmakuView != null) {
+            if (mDanmakuView instanceof DanmakuSurfaceView) {
+                ((DanmakuSurfaceView) mDanmakuView).setZOrderOnTop(true);
+            } else if (mDanmakuView instanceof DanmakuTextureView) {
+                ((DanmakuTextureView) mDanmakuView).setWillNotDraw(false);
+            }
             mParser = createParser(this.getResources().openRawResource(R.raw.comments));
             mDanmakuView.setCallback(new master.flame.danmaku.controller.DrawHandler.Callback() {
                 @Override
@@ -273,6 +287,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     Log.d("DFM", "onDanmakuClick: danmakus size:" + danmakus.size());
                     BaseDanmaku latest = danmakus.last();
                     if (null != latest) {
+                        Toast.makeText(getApplicationContext(), latest.text, Toast.LENGTH_SHORT).show();
                         Log.d("DFM", "onDanmakuClick: text of latest danmaku:" + latest.text);
                         return true;
                     }
@@ -286,7 +301,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                 @Override
                 public boolean onViewClick(IDanmakuView view) {
-                    mMediaController.setVisibility(View.VISIBLE);
+                    Toast.makeText(getApplicationContext(), "onViewClick", Toast.LENGTH_SHORT).show();
+                    // mMediaController.setVisibility(View.VISIBLE);
                     return false;
                 }
             });
@@ -351,9 +367,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        if (v == mMediaController) {
-            mMediaController.setVisibility(View.GONE);
-        }
+        // if (v == mMediaController) {
+        //     mMediaController.setVisibility(View.GONE);
+        // }
         if (mDanmakuView == null || !mDanmakuView.isPrepared()) {
             return;
         }

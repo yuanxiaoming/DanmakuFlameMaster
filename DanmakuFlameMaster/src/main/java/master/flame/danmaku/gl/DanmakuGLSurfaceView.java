@@ -65,7 +65,6 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView
         //设置透明模式，否则底部的播放器会被遮盖
         getHolder().setFormat(PixelFormat.TRANSLUCENT);
 
-        mUiThreadId = Thread.currentThread().getId();
         setBackgroundColor(Color.TRANSPARENT);
         setDrawingCacheBackgroundColor(Color.TRANSPARENT);
         //因为绘制mCanvas上不会被显示，所以暂不配置，否则可能影响到其他的弹幕控件(b站弹幕库问题)
@@ -116,8 +115,6 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView
 
     private float mYOff;
 
-    private View.OnClickListener mOnClickListener;
-
     private DanmakuTouchHelper mTouchHelper;
 
     private boolean mShowFps;
@@ -127,8 +124,6 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView
     protected int mDrawingThreadType = THREAD_TYPE_NORMAL_PRIORITY;
 
     protected boolean mRequestRender = false;
-
-    private long mUiThreadId;
 
     private static final int MAX_RECORD_SIZE = 50;
     private static final int ONE_SECOND = 1000;
@@ -480,7 +475,16 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return mTouchHelper.onTouchEvent(event) || super.onTouchEvent(event);
+
+        int size = mTouchHelper.touchHitDanmaku(event.getX(), event.getY()).getCollection().size();
+        boolean isEventConsumed = mTouchHelper.onTouchEvent(event) && size != 0;
+        if (!isEventConsumed) {
+            super.onTouchEvent(event);
+            return false;
+        }
+        return isEventConsumed;
+
+        //return mTouchHelper.onTouchEvent(event) || super.onTouchEvent(event);
     }
 
     @Override

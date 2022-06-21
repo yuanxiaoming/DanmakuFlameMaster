@@ -249,7 +249,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         mCacheStufferAdapter) // 图文混排使用SpannedCacheStuffer
 //        .setCacheStuffer(new BackgroundCacheStuffer())  // 绘制背景使用BackgroundCacheStuffer
                 .setMaximumLines(maxLinesPair)
+                .setAllowDelayInCacheModel(true)
                 .preventOverlapping(overlappingEnablePair).setDanmakuMargin(40);
+
         if (mDanmakuView != null) {
             if (mDanmakuView instanceof SurfaceView) {
                 ((SurfaceView) mDanmakuView).setZOrderOnTop(true);
@@ -277,8 +279,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 public void prepared() {
                     Log.d("DFM", "prepared");
                     mDanmakuView.start();
-                    mDanmakuView.resume();
-                    mDanmakuView.show();
+                     mDanmakuView.resume();
+                    // mDanmakuView.show();
                 }
             });
             mDanmakuView.setOnDanmakuClickListener(new IDanmakuView.OnDanmakuClickListener() {

@@ -12,14 +12,14 @@ import java.util.Map;
 import master.flame.danmaku.controller.DanmakuFilters;
 import master.flame.danmaku.controller.DanmakuFilters.IDanmakuFilter;
 import master.flame.danmaku.controller.IDanmakuView;
-import master.flame.danmaku.gl.AndroidGLDisplayer;
-import master.flame.danmaku.ui.widget.DanmakuGLSurfaceView;
 import master.flame.danmaku.danmaku.model.AbsDanmakuSync;
 import master.flame.danmaku.danmaku.model.AbsDisplayer;
 import master.flame.danmaku.danmaku.model.AlphaValue;
 import master.flame.danmaku.danmaku.model.BaseDanmaku;
 import master.flame.danmaku.danmaku.model.GlobalFlagValues;
 import master.flame.danmaku.danmaku.model.IDanmakus;
+import master.flame.danmaku.gl.AndroidGLDisplayer;
+import master.flame.danmaku.ui.widget.DanmakuGLSurfaceView;
 
 public class DanmakuContext implements Cloneable {
 
@@ -669,6 +669,11 @@ public class DanmakuContext implements Cloneable {
 
     public DanmakuContext setCachingPolicy(CachingPolicy cachingPolicy) {
         this.cachingPolicy = cachingPolicy;
+        return this;
+    }
+
+    public DanmakuContext setAllowDelayInCacheModel(boolean allowDelayInCacheModel) {
+        this.cachingPolicy.mAllowDelayInCacheModel = allowDelayInCacheModel;
         return this;
     }
 

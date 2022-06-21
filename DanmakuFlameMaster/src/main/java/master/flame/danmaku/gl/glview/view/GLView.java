@@ -1,8 +1,8 @@
 package master.flame.danmaku.gl.glview.view;
 
 import android.opengl.GLES20;
-import android.util.Log;
 
+import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 import master.flame.danmaku.gl.Constants;
 
 import static android.opengl.GLES20.GL_TEXTURE_2D;
@@ -37,7 +37,7 @@ public class GLView {
      */
     public void onGLCreate() {
         if (DEBUG) {
-            Log.i(TAG, "onGLCreate");
+            DanmakuLoggers.i(TAG, "onGLCreate");
         }
         //GLSurfaceView在pause后，大概率会造成GLContext丢失，此时需要重新初始化链接glsl并创建glview纹理
         //先销毁原先所有的gl数据
@@ -53,7 +53,7 @@ public class GLView {
      */
     public void onDisplaySizeChanged(int w, int h) {
         if (DEBUG) {
-            Log.i(TAG, "onDisplaySizeChanged widht=" + w + "\t height=" + h);
+            DanmakuLoggers.i(TAG, "onDisplaySizeChanged widht=" + w + "\t height=" + h);
         }
         mImgProvider.onDisplaySizeChanged(w, h);
         freshView();
@@ -125,7 +125,8 @@ public class GLView {
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         }
         if (DEBUG_DRAW) {
-            Log.i(TAG, "onDrawFrame succeed = " + succeed + "\t time=" + (System.nanoTime() - start));
+            DanmakuLoggers.i(TAG,
+                    "onDrawFrame succeed = " + succeed + "\t time=" + (System.nanoTime() - start));
         }
     }
 

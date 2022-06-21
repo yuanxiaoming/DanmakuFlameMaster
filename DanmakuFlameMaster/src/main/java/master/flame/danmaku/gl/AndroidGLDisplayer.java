@@ -16,8 +16,8 @@ public class AndroidGLDisplayer extends AndroidDisplayer {
 
     private TextureGLSurfaceViewRenderer mRenderer;
 
-    public AndroidGLDisplayer(DanmakuContext context) {
-        super(context);
+    public AndroidGLDisplayer(DanmakuContext danmakuContext) {
+        super(danmakuContext);
     }
 
     @Override

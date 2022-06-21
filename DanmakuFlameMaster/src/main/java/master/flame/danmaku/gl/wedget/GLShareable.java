@@ -1,13 +1,14 @@
 package master.flame.danmaku.gl.wedget;
 
 import android.opengl.GLES20;
-import android.util.Log;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
+
+import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 
 /**
  * 创建人:yangzhiqian
@@ -40,13 +41,14 @@ public interface GLShareable {
         public static GLShareHelper makeSharedGlContext(final GLShareable shareable) {
             EGL10 egl = (EGL10) EGLContext.getEGL();
             EGLContext currentEglContext = egl.eglGetCurrentContext();
-            if (sLocalGLShareHelper.get() != null && currentEglContext != null && currentEglContext != EGL10.EGL_NO_CONTEXT) {
+            if (sLocalGLShareHelper.get() != null && currentEglContext != null &&
+                    currentEglContext != EGL10.EGL_NO_CONTEXT) {
                 //已经调用过makeSharedGlContext了
                 return sLocalGLShareHelper.get();
             }
             if (currentEglContext != null && currentEglContext != EGL10.EGL_NO_CONTEXT) {
                 //当前线程已经存在glcontext
-                Log.w("GLShareHelper", "当前线程已经存在gl环境，请不要在此线程再次初始化opengl环境");
+                DanmakuLoggers.w("GLShareHelper", "当前线程已经存在gl环境，请不要在此线程再次初始化opengl环境");
                 return null;
             }
             if (shareable == null) {
@@ -79,7 +81,8 @@ public interface GLShareable {
                     EGL10.EGL_HEIGHT, shareable.getSurfaceHeight(),
                     EGL10.EGL_NONE
             };
-            EGLSurface eglSurface = egl.eglCreatePbufferSurface(display, sharedConfig, surfaceAttribList);
+            EGLSurface eglSurface =
+                    egl.eglCreatePbufferSurface(display, sharedConfig, surfaceAttribList);
             if (eglSurface == EGL10.EGL_NO_SURFACE) {
                 return null;
             }
@@ -104,9 +107,13 @@ public interface GLShareable {
             if (shareHelper == null) {
                 return;
             }
-            shareHelper.mEGL10.eglDestroySurface(shareHelper.mCurrentDisplay, shareHelper.mCurrentSurface);
-            if (!shareHelper.mEGL10.eglDestroyContext(shareHelper.mCurrentDisplay, shareHelper.mCurrentContext)) {
-                Log.e("GLShareHelper", "display:" + shareHelper.mCurrentDisplay + " context: " + shareHelper.mCurrentContext);
+            shareHelper.mEGL10
+                    .eglDestroySurface(shareHelper.mCurrentDisplay, shareHelper.mCurrentSurface);
+            if (!shareHelper.mEGL10
+                    .eglDestroyContext(shareHelper.mCurrentDisplay, shareHelper.mCurrentContext)) {
+                DanmakuLoggers.e("GLShareHelper",
+                        "display:" + shareHelper.mCurrentDisplay + " context: " +
+                                shareHelper.mCurrentContext);
             }
             //todo releae mCurrentDisplay
 //            shareHelper.mEGL10.eglTerminate(shareHelper.mCurrentDisplay);

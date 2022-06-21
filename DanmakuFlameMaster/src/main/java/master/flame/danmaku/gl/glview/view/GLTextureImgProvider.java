@@ -4,14 +4,13 @@ import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.SystemClock;
-import android.util.Log;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 import master.flame.danmaku.gl.Constants;
 import master.flame.danmaku.gl.glview.GLUtils;
 import master.flame.danmaku.gl.glview.MatrixInfo;
-
 
 public abstract class GLTextureImgProvider<D> {
     private static final String TAG = "GLTextureImgProvider";
@@ -100,7 +99,8 @@ public abstract class GLTextureImgProvider<D> {
         //缩放
         float[] scaleM = new float[16];
         Matrix.setIdentityM(scaleM, 0);
-        Matrix.scaleM(scaleM, 0, matrixInfo.mScaleX * mTextureWidth, matrixInfo.mScaleY * mTextureHeight, 1);
+        Matrix.scaleM(scaleM, 0, matrixInfo.mScaleX * mTextureWidth,
+                matrixInfo.mScaleY * mTextureHeight, 1);
 
         //旋转+镜像旋转
         float[] rotateM = new float[16];
@@ -131,7 +131,8 @@ public abstract class GLTextureImgProvider<D> {
 
     public float[] getModelMatrix() {
         long currentTimeMillis = SystemClock.uptimeMillis();
-        if (mNeedFreshMatrix || (isAutoFreshMatrix() && currentTimeMillis - mLashFreshMatrixTime >= mFreshMatrixGapTime)) {
+        if (mNeedFreshMatrix || (isAutoFreshMatrix() &&
+                currentTimeMillis - mLashFreshMatrixTime >= mFreshMatrixGapTime)) {
             mMatrixInfo = getMatrixInfo();
             mNeedFreshMatrix = false;
             mLashFreshMatrixTime = currentTimeMillis;
@@ -215,7 +216,8 @@ public abstract class GLTextureImgProvider<D> {
                 return 0;
             }
             if (DEBUG_CREATE_TEXTURE) {
-                Log.i(TAG, "createViewTexture texid=" + mViewTextureId + "\t time=" + (System.nanoTime() - start));
+                DanmakuLoggers.i(TAG, "createViewTexture texid=" + mViewTextureId + "\t time=" +
+                        (System.nanoTime() - start));
             }
         }
         return textureId;
@@ -225,7 +227,7 @@ public abstract class GLTextureImgProvider<D> {
         if (mViewTextureId != 0) {
             GLES20.glDeleteTextures(1, new int[]{mViewTextureId}, 0);
             if (DEBUG_RELEASE_TEXTURE) {
-                Log.i(TAG, "destroyTexture texid=" + mViewTextureId);
+                DanmakuLoggers.i(TAG, "destroyTexture texid=" + mViewTextureId);
             }
             mViewTextureId = 0;
         }

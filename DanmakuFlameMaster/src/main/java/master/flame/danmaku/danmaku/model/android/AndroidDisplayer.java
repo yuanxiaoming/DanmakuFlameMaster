@@ -26,6 +26,7 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.text.TextPaint;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -132,7 +133,8 @@ public class AndroidDisplayer extends AbsDisplayer<Canvas, Typeface> {
         }
 
         public void setProjectionConfig(float offsetX, float offsetY, int alpha) {
-            if (sProjectionOffsetX != offsetX || sProjectionOffsetY != offsetY || sProjectionAlpha != alpha) {
+            if (sProjectionOffsetX != offsetX || sProjectionOffsetY != offsetY ||
+                    sProjectionAlpha != alpha) {
                 sProjectionOffsetX = (offsetX > 1.0f) ? offsetX : 1.0f;
                 sProjectionOffsetY = (offsetY > 1.0f) ? offsetY : 1.0f;
                 sProjectionAlpha = (alpha < 0) ? 0 : ((alpha > 255) ? 255 : alpha);
@@ -167,7 +169,8 @@ public class AndroidDisplayer extends AbsDisplayer<Canvas, Typeface> {
         }
 
         public boolean hasStroke(BaseDanmaku danmaku) {
-            return (HAS_STROKE || HAS_PROJECTION) && STROKE_WIDTH > 0 && danmaku.textShadowColor != 0;
+            return (HAS_STROKE || HAS_PROJECTION) && STROKE_WIDTH > 0 &&
+                    danmaku.textShadowColor != 0;
         }
 
         public Paint getBorderPaint(BaseDanmaku danmaku) {
@@ -207,7 +210,8 @@ public class AndroidDisplayer extends AbsDisplayer<Canvas, Typeface> {
                 if (stroke) {
                     paint.setStyle(HAS_PROJECTION ? Style.FILL : Style.FILL_AND_STROKE);
                     paint.setColor(danmaku.textShadowColor & 0x00FFFFFF);
-                    int alpha = HAS_PROJECTION ? (int) (sProjectionAlpha * ((float) transparency / AlphaValue.MAX))
+                    int alpha = HAS_PROJECTION ?
+                            (int) (sProjectionAlpha * ((float) transparency / AlphaValue.MAX))
                             : transparency;
                     paint.setAlpha(alpha);
                 } else {
@@ -267,10 +271,10 @@ public class AndroidDisplayer extends AbsDisplayer<Canvas, Typeface> {
 
     private BaseCacheStuffer sStuffer = new SimpleTextCacheStuffer();
 
-    private DanmakuContext mDanmakuContext;
+    private WeakReference<DanmakuContext> mDanmakuContext;
 
-    public AndroidDisplayer(DanmakuContext context) {
-        mDanmakuContext = context;
+    public AndroidDisplayer(DanmakuContext danmakuContext) {
+        mDanmakuContext = new WeakReference<>(danmakuContext);
     }
 
     @SuppressLint("NewApi")
@@ -437,9 +441,12 @@ public class AndroidDisplayer extends AbsDisplayer<Canvas, Typeface> {
             }
 
             // drawing cache
-            boolean cacheDrawn = sStuffer.drawCache(danmaku, canvas, left, top, alphaPaint, mDisplayConfig.PAINT);
+            boolean cacheDrawn = sStuffer.drawCache(danmaku, canvas, left, top, alphaPaint,
+                    mDisplayConfig.PAINT);
             int result = IRenderer.CACHE_RENDERING;
-            if (!cacheDrawn && !(mDanmakuContext.cachingPolicy.mCacheDrawEnabled && mDanmakuContext.cachingPolicy.mAllowDelayInCacheModel)) {
+            if (!cacheDrawn && !(mDanmakuContext != null && mDanmakuContext.get() != null &&
+                    (mDanmakuContext.get().cachingPolicy.mCacheDrawEnabled &&
+                            mDanmakuContext.get().cachingPolicy.mAllowDelayInCacheModel))) {
                 if (alphaPaint != null) {
                     mDisplayConfig.PAINT.setAlpha(alphaPaint.getAlpha());
                     mDisplayConfig.PAINT_DUPLICATE.setAlpha(alphaPaint.getAlpha());
@@ -479,14 +486,14 @@ public class AndroidDisplayer extends AbsDisplayer<Canvas, Typeface> {
 
     private int saveCanvas(BaseDanmaku danmaku, Canvas canvas, float left, float top) {
         camera.save();
-        if (locationZ !=0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
+        if (locationZ != 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
             camera.setLocation(0, 0, locationZ);
         }
         camera.rotateY(-danmaku.rotationY);
         camera.rotateZ(-danmaku.rotationZ);
         camera.getMatrix(matrix);
         matrix.preTranslate(-left, -top);
-        matrix.postTranslate(left , top);
+        matrix.postTranslate(left, top);
         camera.restore();
         int count = canvas.save();
         canvas.concat(matrix);
@@ -553,11 +560,13 @@ public class AndroidDisplayer extends AbsDisplayer<Canvas, Typeface> {
 
     @Override
     public void resetSlopPixel(float factor) {
-        float d = Math.max(factor, getWidth() / DanmakuFactory.BILI_PLAYER_WIDTH); //correct for low density and high resolution
+        float d = Math.max(factor, getWidth() /
+                DanmakuFactory.BILI_PLAYER_WIDTH); //correct for low density and high resolution
         float slop = d * DanmakuFactory.DANMAKU_MEDIUM_TEXTSIZE;
         mSlopPixel = (int) slop;
-        if (factor > 1f)
+        if (factor > 1f) {
             mSlopPixel = (int) (slop * factor);
+        }
     }
 
     @Override

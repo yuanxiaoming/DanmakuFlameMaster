@@ -56,8 +56,8 @@ public class DeviceUtils {
                         sArch = ARCH.ARM64;
                         break;
                     default:
-                        DanmakuLoggers
-                                .e(TAG, "libc.so is unknown arch: " + Integer.toHexString(machine));
+                        DanmakuLoggers.e(TAG, "libc.so is unknown arch: " +
+                                "" + Integer.toHexString(machine));
                         break;
                 }
             } catch (FileNotFoundException e) {

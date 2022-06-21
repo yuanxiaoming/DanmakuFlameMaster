@@ -18,11 +18,9 @@ import android.text.Spanned;
 import android.text.TextPaint;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ImageSpan;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
-import android.widget.PopupWindow;
 import android.widget.VideoView;
 
 import java.io.IOException;
@@ -48,6 +46,7 @@ import master.flame.danmaku.danmaku.model.android.Danmakus;
 import master.flame.danmaku.danmaku.model.android.SpannedCacheStuffer;
 import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
 import master.flame.danmaku.danmaku.parser.IDataSource;
+import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 import master.flame.danmaku.danmaku.util.IOUtils;
 import master.flame.danmaku.danmaku.util.SystemClock;
 import master.flame.danmaku.extensions.CustomCacheStuffer;
@@ -57,8 +56,6 @@ public class BiliMainActivity extends Activity implements View.OnClickListener {
     private IDanmakuView mDanmakuView;
 
     private View mMediaController;
-
-    public PopupWindow mPopupWindow;
 
     private Button mBtnRotate;
 
@@ -245,7 +242,7 @@ public class BiliMainActivity extends Activity implements View.OnClickListener {
 
                 @Override
                 public void danmakuShown(BaseDanmaku danmaku) {
-//                    Log.d("DFM", "danmakuShown(): text=" + danmaku.text);
+//                    DanmakuLoggers.d("DFM", "danmakuShown(): text=" + danmaku.text);
                 }
 
                 @Override
@@ -257,10 +254,11 @@ public class BiliMainActivity extends Activity implements View.OnClickListener {
 
                 @Override
                 public boolean onDanmakuClick(IDanmakus danmakus) {
-                    Log.d("DFM", "onDanmakuClick: danmakus size:" + danmakus.size());
+                    DanmakuLoggers.d("DFM", "onDanmakuClick: danmakus size:" + danmakus.size());
                     BaseDanmaku latest = danmakus.last();
                     if (null != latest) {
-                        Log.d("DFM", "onDanmakuClick: text of latest danmaku:" + latest.text);
+                        DanmakuLoggers
+                                .d("DFM", "onDanmakuClick: text of latest danmaku:" + latest.text);
                         return true;
                     }
                     return false;

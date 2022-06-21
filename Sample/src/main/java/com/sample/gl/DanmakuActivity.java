@@ -31,7 +31,6 @@ import master.flame.danmaku.danmaku.model.android.Danmakus;
 import master.flame.danmaku.danmaku.model.android.SpannedCacheStuffer;
 import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
 import master.flame.danmaku.danmaku.parser.IDataSource;
-import master.flame.danmaku.gl.utils.SpeedsMeasurement;
 
 public class DanmakuActivity extends Activity {
     public static final String TYPE = "danmaku_type";
@@ -165,7 +164,7 @@ public class DanmakuActivity extends Activity {
         private Random rand = new Random();
         private Duration mDuration = new Duration(6000);
         private HandlerThread handlerThread;
-        private SpeedsMeasurement speedsMeasurement = new SpeedsMeasurement("MainSenderSpeed");
+        // private SpeedsMeasurement speedsMeasurement = new SpeedsMeasurement("MainSenderSpeed");
 
         FrequencyDanmakuSender() {
             handlerThread = new HandlerThread("sender");
@@ -239,7 +238,7 @@ public class DanmakuActivity extends Activity {
                 danmaku.textColor = rand.nextInt() | 0xff000000;
                 danmaku.setDuration(mDuration);
                 mNormalDanmakuView.addDanmaku(danmaku);
-                speedsMeasurement.dot();
+                // speedsMeasurement.dot();
             }
             if (mRunning && mSpeed > 0) {
                 mHandler.postDelayed(this, 1000 / mSpeed);

@@ -11,7 +11,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -28,6 +27,7 @@ import javax.microedition.khronos.egl.EGLSurface;
 import javax.microedition.khronos.opengles.GL;
 import javax.microedition.khronos.opengles.GL10;
 
+import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 import master.flame.danmaku.gl.Constants;
 
 public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.Callback2, GLShareable {
@@ -91,7 +91,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
     @Override
     protected void finalize() throws Throwable {
         if (DEBUG) {
-            Log.i(TAG, "finalize");
+            DanmakuLoggers.i(TAG, "finalize");
         }
         try {
             exit();
@@ -113,7 +113,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
             exitSucceed = true;
         }
         if (DEBUG) {
-            Log.i(TAG, "exit state=" + exitSucceed + "\t time=" + (System.nanoTime() - start));
+            DanmakuLoggers.i(TAG, "exit state=" + exitSucceed + "\t time=" + (System.nanoTime() - start));
         }
     }
 
@@ -161,7 +161,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
     public void setRenderer(Renderer renderer, Looper workLooper) {
         checkRenderThreadState();
         if (DEBUG) {
-            Log.i(TAG, "setRenderer workLooper = " + workLooper);
+            DanmakuLoggers.i(TAG, "setRenderer workLooper = " + workLooper);
         }
         if (mEGLConfigChooser == null) {
             mEGLConfigChooser = new SimpleEGLConfigChooser(true);
@@ -218,18 +218,18 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
 
     public void setRenderMode(int renderMode) {
         if (mHandler == null) {
-            Log.w(TAG, "did you have called the setRenderer before call setRenderMode");
+            DanmakuLoggers.w(TAG, "did you have called the setRenderer before call setRenderMode");
             return;
         }
         if (DEBUG) {
-            Log.i(TAG, "setRenderMode renderMode = " + renderMode);
+            DanmakuLoggers.i(TAG, "setRenderMode renderMode = " + renderMode);
         }
         mHandler.setRenderMode(renderMode);
     }
 
     public int getRenderMode() {
         if (mHandler == null) {
-            Log.w(TAG, "did you have called the setRenderer before call getRenderMode");
+            DanmakuLoggers.w(TAG, "did you have called the setRenderer before call getRenderMode");
             return DEFAULT_RENDERMODE;
         }
         return mHandler.getRenderMode();
@@ -237,11 +237,11 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
 
     public void requestRender() {
         if (mHandler == null) {
-            Log.w(TAG, "did you have called the setRenderer before call requestRender");
+            DanmakuLoggers.w(TAG, "did you have called the setRenderer before call requestRender");
             return;
         }
         if (DEBUG) {
-            Log.i(TAG, "requestRender");
+            DanmakuLoggers.i(TAG, "requestRender");
         }
         mHandler.requestRender();
     }
@@ -259,7 +259,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
             return;
         }
         if (DEBUG) {
-            Log.i(TAG, "surfaceCreated");
+            DanmakuLoggers.i(TAG, "surfaceCreated");
         }
         mHandler.surfaceCreated();
     }
@@ -270,7 +270,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
             return;
         }
         if (DEBUG) {
-            Log.i(TAG, "surfaceDestroyed");
+            DanmakuLoggers.i(TAG, "surfaceDestroyed");
         }
         mHandler.surfaceDestroyed();
     }
@@ -281,7 +281,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
             return;
         }
         if (DEBUG) {
-            Log.i(TAG, "surfaceChanged");
+            DanmakuLoggers.i(TAG, "surfaceChanged");
         }
         mHandler.onWindowResize(w, h);
     }
@@ -292,7 +292,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
             return;
         }
         if (DEBUG) {
-            Log.i(TAG, "surfaceRedrawNeededAsync");
+            DanmakuLoggers.i(TAG, "surfaceRedrawNeededAsync");
         }
         mHandler.requestRenderAndNotify(finishDrawing);
     }
@@ -305,33 +305,33 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
 
     public void onPause() {
         if (mHandler == null) {
-            Log.w(TAG, "did you have called the setRenderer");
+            DanmakuLoggers.w(TAG, "did you have called the setRenderer");
             return;
         }
         if (DEBUG) {
-            Log.i(TAG, "onPause");
+            DanmakuLoggers.i(TAG, "onPause");
         }
         mHandler.onPause();
     }
 
     public void onResume() {
         if (mHandler == null) {
-            Log.w(TAG, "did you have called the setRenderer");
+            DanmakuLoggers.w(TAG, "did you have called the setRenderer");
             return;
         }
         if (DEBUG) {
-            Log.i(TAG, "onResume");
+            DanmakuLoggers.i(TAG, "onResume");
         }
         mHandler.onResume();
     }
 
     public void queueEvent(Runnable r) {
         if (mHandler == null) {
-            Log.w(TAG, "did you have called the setRenderer before call queueEvent");
+            DanmakuLoggers.w(TAG, "did you have called the setRenderer before call queueEvent");
             return;
         }
         if (DEBUG) {
-            Log.i(TAG, "queueEvent");
+            DanmakuLoggers.i(TAG, "queueEvent");
         }
         mHandler.queueEvent(r);
     }
@@ -340,7 +340,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (LOG_ATTACH_DETACH) {
-            Log.d(TAG, "onAttachedToWindow reattach =" + mDetached);
+            DanmakuLoggers.d(TAG, "onAttachedToWindow reattach =" + mDetached);
         }
 
         if (mDetached && (mRenderer != null)) {
@@ -357,7 +357,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
     @Override
     protected void onDetachedFromWindow() {
         if (LOG_ATTACH_DETACH) {
-            Log.d(TAG, "onDetachedFromWindow");
+            DanmakuLoggers.d(TAG, "onDetachedFromWindow");
         }
         exit();
         mDetached = true;
@@ -479,14 +479,14 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
                                 mPaused = mRequestPaused;
                                 notifyMonitor();
                                 if (LOG_PAUSE_RESUME) {
-                                    Log.i("GLThread", "mPaused is now " + mPaused + " tid=" + Thread.currentThread().getId());
+                                    DanmakuLoggers.i("GLThread", "mPaused is now " + mPaused + " tid=" + Thread.currentThread().getId());
                                 }
                             }
 
                             // Do we need to give up the EGL context?
                             if (mShouldReleaseEglContext) {
                                 if (LOG_SURFACE) {
-                                    Log.i("GLThread", "releasing EGL context because asked to tid=" + Thread.currentThread().getId());
+                                    DanmakuLoggers.i("GLThread", "releasing EGL context because asked to tid=" + Thread.currentThread().getId());
                                 }
                                 stopEglSurfaceLocked();
                                 stopEglContextLocked();
@@ -504,7 +504,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
                             // When pausing, release the EGL surface:
                             if (pausing && mHaveEglSurface) {
                                 if (LOG_SURFACE) {
-                                    Log.i("GLThread", "releasing EGL surface because paused tid=" + Thread.currentThread().getId());
+                                    DanmakuLoggers.i("GLThread", "releasing EGL surface because paused tid=" + Thread.currentThread().getId());
                                 }
                                 stopEglSurfaceLocked();
                             }
@@ -514,7 +514,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
                                 if (!glHandlerSurfaceView.mPreserveEGLContextOnPause) {
                                     stopEglContextLocked();
                                     if (LOG_SURFACE) {
-                                        Log.i("GLThread", "releasing EGL context because paused tid=" + Thread.currentThread().getId());
+                                        DanmakuLoggers.i("GLThread", "releasing EGL context because paused tid=" + Thread.currentThread().getId());
                                     }
                                 }
                             }
@@ -522,7 +522,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
                             // Have we lost the SurfaceView surface?
                             if ((!mHasSurface) && (!mWaitingForSurface)) {
                                 if (LOG_SURFACE) {
-                                    Log.i("GLThread", "noticed surfaceView surface lost tid=" + Thread.currentThread().getId());
+                                    DanmakuLoggers.i("GLThread", "noticed surfaceView surface lost tid=" + Thread.currentThread().getId());
                                 }
                                 if (mHaveEglSurface) {
                                     stopEglSurfaceLocked();
@@ -535,7 +535,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
                             // Have we acquired the surface view surface?
                             if (mHasSurface && mWaitingForSurface) {
                                 if (LOG_SURFACE) {
-                                    Log.i("GLThread", "noticed surfaceView surface acquired tid=" + Thread.currentThread().getId());
+                                    DanmakuLoggers.i("GLThread", "noticed surfaceView surface acquired tid=" + Thread.currentThread().getId());
                                 }
                                 mWaitingForSurface = false;
                                 notifyMonitor();
@@ -543,7 +543,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
 
                             if (doRenderNotification) {
                                 if (LOG_SURFACE) {
-                                    Log.i("GLThread", "sending render notification tid=" + Thread.currentThread().getId());
+                                    DanmakuLoggers.i("GLThread", "sending render notification tid=" + Thread.currentThread().getId());
                                 }
                                 mWantRenderNotification = false;
                                 doRenderNotification = false;
@@ -591,7 +591,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
                                         h = mHeight;
                                         mWantRenderNotification = true;
                                         if (LOG_SURFACE) {
-                                            Log.i("GLThread",
+                                            DanmakuLoggers.i("GLThread",
                                                     "noticing that we want render notification tid="
                                                             + Thread.currentThread().getId());
                                         }
@@ -611,7 +611,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
                                 }
                             } else {
                                 if (finishDrawingRunnable != null) {
-                                    Log.w(TAG, "Warning, !readyToDraw() but waiting for " +
+                                    DanmakuLoggers.w(TAG, "Warning, !readyToDraw() but waiting for " +
                                             "draw finished! Early reporting draw finished.");
                                     finishDrawingRunnable.run();
                                     finishDrawingRunnable = null;
@@ -619,7 +619,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
                             }
                             // By design, this is the only place in a GLThread thread where we wait().
                             if (LOG_THREADS) {
-                                Log.i("GLThread", "waiting tid=" + Thread.currentThread().getId()
+                                DanmakuLoggers.i("GLThread", "waiting tid=" + Thread.currentThread().getId()
                                         + " mHaveEglContext: " + mHaveEglContext
                                         + " mHaveEglSurface: " + mHaveEglSurface
                                         + " mFinishedCreatingEglSurface: " + mFinishedCreatingEglSurface
@@ -639,7 +639,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
 
                     if (createEglSurface) {
                         if (LOG_SURFACE) {
-                            Log.w("GLThread", "egl createSurface");
+                            DanmakuLoggers.w("GLThread", "egl createSurface");
                         }
                         if (mEglHelper.createSurface()) {
                             synchronized (glHandlerSurfaceView.mMonitor) {
@@ -665,7 +665,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
 
                     if (createEglContext) {
                         if (LOG_RENDERER) {
-                            Log.w("GLThread", "onSurfaceCreated");
+                            DanmakuLoggers.w("GLThread", "onSurfaceCreated");
                         }
                         glHandlerSurfaceView.mRenderer.onSurfaceCreated(gl, mEglHelper.mEglConfig);
                         createEglContext = false;
@@ -673,14 +673,14 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
 
                     if (sizeChanged) {
                         if (LOG_RENDERER) {
-                            Log.w("GLThread", "onSurfaceChanged(" + w + ", " + h + ")");
+                            DanmakuLoggers.w("GLThread", "onSurfaceChanged(" + w + ", " + h + ")");
                         }
                         glHandlerSurfaceView.mRenderer.onSurfaceChanged(gl, w, h);
                         sizeChanged = false;
                     }
 
                     if (LOG_RENDERER_DRAW_FRAME) {
-                        Log.w("GLThread", "onDrawFrame tid=" + Thread.currentThread().getId());
+                        DanmakuLoggers.w("GLThread", "onDrawFrame tid=" + Thread.currentThread().getId());
                     }
                     glHandlerSurfaceView.mRenderer.onDrawFrame(gl);
                     if (finishDrawingRunnable != null) {
@@ -693,7 +693,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
                             break;
                         case EGL11.EGL_CONTEXT_LOST:
                             if (LOG_SURFACE) {
-                                Log.i("GLThread", "egl context lost tid=" + Thread.currentThread().getId());
+                                DanmakuLoggers.i("GLThread", "egl context lost tid=" + Thread.currentThread().getId());
                             }
                             lostEglContext = true;
                             break;
@@ -841,7 +841,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
             GLHandlerSurfaceView glHandlerSurfaceView = mWeakReference.get();
             synchronized (glHandlerSurfaceView.mMonitor) {
                 if (LOG_THREADS) {
-                    Log.i("GLThread", "surfaceCreated tid=" + getLooper().getThread().getId());
+                    DanmakuLoggers.i("GLThread", "surfaceCreated tid=" + getLooper().getThread().getId());
                 }
                 mHasSurface = true;
                 mFinishedCreatingEglSurface = false;
@@ -866,7 +866,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
             GLHandlerSurfaceView glHandlerSurfaceView = mWeakReference.get();
             synchronized (glHandlerSurfaceView.mMonitor) {
                 if (LOG_THREADS) {
-                    Log.i("GLThread", "surfaceDestroyed tid=" + getLooper().getThread().getId());
+                    DanmakuLoggers.i("GLThread", "surfaceDestroyed tid=" + getLooper().getThread().getId());
                 }
                 mHasSurface = false;
                 removeMessages(MSG_RUN);
@@ -888,7 +888,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
             GLHandlerSurfaceView glHandlerSurfaceView = mWeakReference.get();
             synchronized (glHandlerSurfaceView.mMonitor) {
                 if (LOG_PAUSE_RESUME) {
-                    Log.i("GLThread", "onPause tid=" + getLooper().getThread().getId());
+                    DanmakuLoggers.i("GLThread", "onPause tid=" + getLooper().getThread().getId());
                 }
                 mRequestPaused = true;
                 removeMessages(MSG_RUN);
@@ -898,7 +898,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
                     obtainMessage(MSG_RUN).sendToTarget();
                     while ((!mExited) && (!mPaused)) {
                         if (LOG_PAUSE_RESUME) {
-                            Log.i("Main thread", "onPause waiting for mPaused.");
+                            DanmakuLoggers.i("Main thread", "onPause waiting for mPaused.");
                         }
                         try {
                             glHandlerSurfaceView.mMonitor.wait(NORMAL_WAIT_TIME);
@@ -913,7 +913,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
             GLHandlerSurfaceView glHandlerSurfaceView = mWeakReference.get();
             synchronized (glHandlerSurfaceView.mMonitor) {
                 if (LOG_PAUSE_RESUME) {
-                    Log.i("GLThread", "onResume tid=" + getLooper().getThread().getId());
+                    DanmakuLoggers.i("GLThread", "onResume tid=" + getLooper().getThread().getId());
                 }
                 mRequestPaused = false;
                 mRequestRender = true;
@@ -925,7 +925,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
                     obtainMessage(MSG_RUN).sendToTarget();
                     while ((!mExited) && mPaused && (!mRenderComplete)) {
                         if (LOG_PAUSE_RESUME) {
-                            Log.i("Main thread", "onResume waiting for !mPaused.");
+                            DanmakuLoggers.i("Main thread", "onResume waiting for !mPaused.");
                         }
                         try {
                             glHandlerSurfaceView.mMonitor.wait(NORMAL_WAIT_TIME);
@@ -953,7 +953,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
                     while (!mExited && !mPaused && !mRenderComplete
                             && ableToDraw()) {
                         if (LOG_SURFACE) {
-                            Log.i("Main thread", "onWindowResize waiting for render complete from tid=" + getLooper().getThread().getId());
+                            DanmakuLoggers.i("Main thread", "onWindowResize waiting for render complete from tid=" + getLooper().getThread().getId());
                         }
                         try {
                             glHandlerSurfaceView.mMonitor.wait(NORMAL_WAIT_TIME);
@@ -1045,9 +1045,9 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
         public void destroyContext(EGL10 egl, EGLDisplay display,
                                    EGLContext context) {
             if (!egl.eglDestroyContext(display, context)) {
-                Log.e("DefaultContextFactory", "display:" + display + " context: " + context);
+                DanmakuLoggers.e("DefaultContextFactory", "display:" + display + " context: " + context);
                 if (LOG_THREADS) {
-                    Log.i("DefaultContextFactory", "tid=" + Thread.currentThread().getId());
+                    DanmakuLoggers.i("DefaultContextFactory", "tid=" + Thread.currentThread().getId());
                 }
                 EglHelper.throwEglException("eglDestroyContex", egl.eglGetError());
             }
@@ -1070,7 +1070,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
             try {
                 result = egl.eglCreateWindowSurface(display, config, nativeWindow, null);
             } catch (IllegalArgumentException e) {
-                Log.e(TAG, "eglCreateWindowSurface", e);
+                DanmakuLoggers.e(TAG, "eglCreateWindowSurface", e);
             }
             return result;
         }
@@ -1224,7 +1224,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
 
         public void start() {
             if (LOG_EGL) {
-                Log.w("EglHelper", "start() tid=" + Thread.currentThread().getId());
+                DanmakuLoggers.w("EglHelper", "start() tid=" + Thread.currentThread().getId());
             }
 
             mEgl = (EGL10) EGLContext.getEGL();
@@ -1251,7 +1251,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
                 throwEglException("createContext");
             }
             if (LOG_EGL) {
-                Log.w("EglHelper", "createContext " + mEglContext + " tid=" + Thread.currentThread().getId());
+                DanmakuLoggers.w("EglHelper", "createContext " + mEglContext + " tid=" + Thread.currentThread().getId());
             }
 
             mEglSurface = null;
@@ -1259,7 +1259,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
 
         public boolean createSurface() {
             if (LOG_EGL) {
-                Log.w("EglHelper", "createSurface()  tid=" + Thread.currentThread().getId());
+                DanmakuLoggers.w("EglHelper", "createSurface()  tid=" + Thread.currentThread().getId());
             }
             if (mEgl == null) {
                 throw new RuntimeException("egl not initialized");
@@ -1284,7 +1284,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
             if (mEglSurface == null || mEglSurface == EGL10.EGL_NO_SURFACE) {
                 int error = mEgl.eglGetError();
                 if (error == EGL10.EGL_BAD_NATIVE_WINDOW) {
-                    Log.e("EglHelper", "createWindowSurface returned EGL_BAD_NATIVE_WINDOW.");
+                    DanmakuLoggers.e("EglHelper", "createWindowSurface returned EGL_BAD_NATIVE_WINDOW.");
                 }
                 return false;
             }
@@ -1329,7 +1329,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
 
         public void destroySurface() {
             if (LOG_EGL) {
-                Log.w("EglHelper", "destroySurface()  tid=" + Thread.currentThread().getId());
+                DanmakuLoggers.w("EglHelper", "destroySurface()  tid=" + Thread.currentThread().getId());
             }
             destroySurfaceImp();
         }
@@ -1349,7 +1349,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
 
         public void finish() {
             if (LOG_EGL) {
-                Log.w("EglHelper", "finish() tid=" + Thread.currentThread().getId());
+                DanmakuLoggers.w("EglHelper", "finish() tid=" + Thread.currentThread().getId());
             }
             if (mEglContext != null) {
                 GLHandlerSurfaceView view = mGLSurfaceViewWeakRef.get();
@@ -1371,14 +1371,14 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
         public static void throwEglException(String function, int error) {
             String message = formatEglError(function, error);
             if (LOG_THREADS) {
-                Log.e("EglHelper", "throwEglException tid=" + Thread.currentThread().getId() + " "
+                DanmakuLoggers.e("EglHelper", "throwEglException tid=" + Thread.currentThread().getId() + " "
                         + message);
             }
             throw new RuntimeException(message);
         }
 
         public static void logEglErrorAsWarning(String tag, String function, int error) {
-            Log.w(tag, formatEglError(function, error));
+            DanmakuLoggers.w(tag, formatEglError(function, error));
         }
 
         public static String formatEglError(String function, int error) {
@@ -1413,7 +1413,7 @@ public class GLHandlerSurfaceView extends SurfaceView implements SurfaceHolder.C
 
         private void flushBuilder() {
             if (mBuilder.length() > 0) {
-                Log.v("GLSurfaceView", mBuilder.toString());
+                DanmakuLoggers.v("GLSurfaceView", mBuilder.toString());
                 mBuilder.delete(0, mBuilder.length());
             }
         }

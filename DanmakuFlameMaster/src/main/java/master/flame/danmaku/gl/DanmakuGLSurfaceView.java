@@ -9,7 +9,6 @@ import android.graphics.PixelFormat;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -22,12 +21,14 @@ import master.flame.danmaku.danmaku.model.BaseDanmaku;
 import master.flame.danmaku.danmaku.model.IDanmakus;
 import master.flame.danmaku.danmaku.model.android.DanmakuContext;
 import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
+import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 import master.flame.danmaku.danmaku.util.SystemClock;
 import master.flame.danmaku.gl.glview.controller.TextureGLSurfaceViewRenderer;
 import master.flame.danmaku.gl.wedget.GLHandlerSurfaceView;
 import master.flame.danmaku.ui.widget.DanmakuTouchHelper;
 
-public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanmakuView, IDanmakuViewController {
+public class DanmakuGLSurfaceView extends GLHandlerSurfaceView
+        implements IDanmakuView, IDanmakuViewController {
     private static final String TAG = "DanmakuGLSurfaceView";
     private static final boolean DEBUG = Constants.DEBUG_DANMAKUGLSURFACEVIEW;
     private static final boolean DEBUG_DRAW = Constants.DEBUG_DANMAKUGLSURFACEVIEW_DRAW_STATUS;
@@ -133,7 +134,6 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     private static final int ONE_SECOND = 1000;
     private LinkedList<Long> mDrawTimes;
 
-
     /**
      * 该mBitmap，mCanvas用来作为原先绘制方式的画布位图，大小等于view的大小
      * 因为DrawTask需要操作一个Canvas，所以构造了一个和原来相同的画布
@@ -188,7 +188,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     @Override
     public void release() {
         if (DEBUG) {
-            Log.d(TAG, "release");
+            DanmakuLoggers.d(TAG, "release");
         }
         stop();
         if (mDrawTimes != null) {
@@ -203,11 +203,11 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     @Override
     public void stop() {
         if (DEBUG) {
-            Log.d(TAG, "stopDraw start");
+            DanmakuLoggers.d(TAG, "stopDraw start");
         }
         stopDraw();
         if (DEBUG) {
-            Log.d(TAG, "stopDraw finish");
+            DanmakuLoggers.d(TAG, "stopDraw finish");
         }
     }
 
@@ -260,7 +260,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
         mHandlerThread = new HandlerThread(threadName, priority);
         mHandlerThread.start();
         if (DEBUG) {
-            Log.d(TAG, "start a new looper,type=" + type);
+            DanmakuLoggers.d(TAG, "start a new looper,type=" + type);
         }
         return mHandlerThread.getLooper();
     }
@@ -272,7 +272,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
             setRenderMode(GLHandlerSurfaceView.RENDERMODE_WHEN_DIRTY);
             handler = new DrawHandler(looper, this, mDanmakuVisible);
             if (DEBUG) {
-                Log.d(TAG, "prepare");
+                DanmakuLoggers.d(TAG, "prepare");
             }
         }
     }
@@ -327,12 +327,14 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     @Override
     public long drawDanmakus() {
         if (DEBUG_DRAW) {
-            Log.d(TAG, "drawDanmakus");
+            DanmakuLoggers.d(TAG, "drawDanmakus");
         }
-        if (!isSurfaceCreated)
+        if (!isSurfaceCreated) {
             return 0;
-        if (!isShown())
+        }
+        if (!isShown()) {
             return -1;
+        }
         long stime = SystemClock.uptimeMillis();
         if (mCanvas == null) {
             initTempCanvas(getWidth(), getHeight());
@@ -343,7 +345,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
         mRenderer.requestRender();
         if (mShowFps) {
             //todo 暂时fps，暂时没有想到解决方案，但可以通过打印log方式
-            Log.i(TAG, String.format("danmuku fps = %.2f", fps()));
+            DanmakuLoggers.i(TAG, String.format("danmuku fps = %.2f", fps()));
         }
         return SystemClock.uptimeMillis() - stime;
     }
@@ -352,7 +354,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
         if (DEBUG) {
-            Log.d(TAG, "onLayout");
+            DanmakuLoggers.d(TAG, "onLayout");
         }
         initTempCanvas(right - left, bottom - top);
         if (handler != null) {
@@ -365,7 +367,8 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
         if (width <= 0 || height <= 0) {
             return;
         }
-        if (mBitmap == null || mBitmap.getWidth() != width || mBitmap.getHeight() != height || mBitmap.isRecycled()) {
+        if (mBitmap == null || mBitmap.getWidth() != width || mBitmap.getHeight() != height ||
+                mBitmap.isRecycled()) {
             if (mBitmap != null && !mBitmap.isRecycled()) {
                 mBitmap.recycle();
             }
@@ -375,7 +378,8 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
             }
             mCanvas.setBitmap(mBitmap);
             if (DEBUG) {
-                Log.d(TAG, "create a new temp bitmap,width=" + width + ",height=" + height);
+                DanmakuLoggers
+                        .d(TAG, "create a new temp bitmap,width=" + width + ",height=" + height);
             }
         }
     }
@@ -383,9 +387,9 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     @Override
     public void toggle() {
         if (isSurfaceCreated) {
-            if (handler == null)
+            if (handler == null) {
                 start();
-            else if (handler.isStop()) {
+            } else if (handler.isStop()) {
                 resume();
             } else {
                 pause();
@@ -396,7 +400,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     @Override
     public void pause() {
         if (DEBUG) {
-            Log.d(TAG, "pause");
+            DanmakuLoggers.d(TAG, "pause");
         }
         onPause();
         if (handler != null) {
@@ -426,7 +430,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     @Override
     public void resume() {
         if (DEBUG) {
-            Log.d(TAG, "resume");
+            DanmakuLoggers.d(TAG, "resume");
         }
         onResume();
         if (handler != null && handler.isPrepared()) {
@@ -447,7 +451,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
 
     public void restart() {
         if (DEBUG) {
-            Log.d(TAG, "restart");
+            DanmakuLoggers.d(TAG, "restart");
         }
         stop();
         start();
@@ -456,7 +460,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     @Override
     public void start() {
         if (DEBUG) {
-            Log.d(TAG, "start");
+            DanmakuLoggers.d(TAG, "start");
         }
         start(0);
     }
@@ -464,7 +468,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     @Override
     public void start(long position) {
         if (DEBUG) {
-            Log.d(TAG, "start position=" + position);
+            DanmakuLoggers.d(TAG, "start position=" + position);
         }
         if (handler == null) {
             prepare();
@@ -482,13 +486,12 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     @Override
     public void seekTo(Long ms) {
         if (DEBUG) {
-            Log.d(TAG, "seekTo " + ms);
+            DanmakuLoggers.d(TAG, "seekTo " + ms);
         }
         if (handler != null) {
             handler.seekTo(ms);
         }
     }
-
 
     @Override
     public void enableDanmakuDrawingCache(boolean enable) {
@@ -524,7 +527,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     @Override
     public void show() {
         if (DEBUG) {
-            Log.d(TAG, "show ");
+            DanmakuLoggers.d(TAG, "show ");
         }
         showAndResumeDrawTask(null);
     }
@@ -532,7 +535,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     @Override
     public void showAndResumeDrawTask(Long position) {
         if (DEBUG) {
-            Log.d(TAG, "show position = " + position);
+            DanmakuLoggers.d(TAG, "show position = " + position);
         }
         mDanmakuVisible = true;
         mRenderer.show();
@@ -545,7 +548,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     @Override
     public void hide() {
         if (DEBUG) {
-            Log.d(TAG, "hide ");
+            DanmakuLoggers.d(TAG, "hide ");
         }
         mDanmakuVisible = false;
         mRenderer.hide();
@@ -568,7 +571,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     @Override
     public void clear() {
         if (DEBUG) {
-            Log.d(TAG, "clear ");
+            DanmakuLoggers.d(TAG, "clear ");
         }
         if (!isViewReady()) {
             return;
@@ -604,7 +607,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     @Override
     public void clearDanmakusOnScreen() {
         if (DEBUG) {
-            Log.d(TAG, "clearDanmakusOnScreen ");
+            DanmakuLoggers.d(TAG, "clearDanmakusOnScreen ");
         }
         if (handler != null) {
             handler.clearDanmakusOnScreen();
@@ -642,7 +645,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView implements IDanma
     @Override
     public void forceRender() {
         if (DEBUG) {
-            Log.d(TAG, "forceRender ");
+            DanmakuLoggers.d(TAG, "forceRender ");
         }
         mRequestRender = true;
         handler.forceRender();

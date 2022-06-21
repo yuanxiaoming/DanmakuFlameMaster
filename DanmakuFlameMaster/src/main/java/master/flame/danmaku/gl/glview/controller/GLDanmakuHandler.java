@@ -1,10 +1,9 @@
 package master.flame.danmaku.gl.glview.controller;
 
-import android.util.Log;
-
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import master.flame.danmaku.danmaku.model.BaseDanmaku;
+import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 import master.flame.danmaku.gl.Constants;
 import master.flame.danmaku.gl.glview.view.GLViewGroup;
 import master.flame.danmaku.gl.wedget.GLHandlerSurfaceView;
@@ -38,7 +37,7 @@ public class GLDanmakuHandler implements Runnable {
      */
     public void onSurfaceCreate() {
         if (DEBUG) {
-            Log.d(TAG, "onSurfaceCreate");
+            DanmakuLoggers.d(TAG, "onSurfaceCreate");
         }
         mHasGLContext = true;
         mGLViewGroup.onGLSurfaceViewCreate();
@@ -50,7 +49,7 @@ public class GLDanmakuHandler implements Runnable {
      */
     public void onSurfaceSizeChanged(int width, int height) {
         if (DEBUG) {
-            Log.d(TAG, "onSurfaceSizeChanged width=" + width + "\theight=" + height);
+            DanmakuLoggers.d(TAG, "onSurfaceSizeChanged width=" + width + "\theight=" + height);
         }
         mHasGLContext = true;
         mGLViewGroup.onDisplaySizeChanged(width, height);
@@ -61,7 +60,7 @@ public class GLDanmakuHandler implements Runnable {
      */
     public void onGLDrawFrame() {
         if (DEBUG) {
-            Log.d(TAG, "onGLDrawFrame");
+            DanmakuLoggers.d(TAG, "onGLDrawFrame");
         }
         mHasGLContext = true;
         if (!mPaused) {
@@ -75,14 +74,14 @@ public class GLDanmakuHandler implements Runnable {
 
     public void onResume() {
         if (DEBUG) {
-            Log.d(TAG, "onResume");
+            DanmakuLoggers.d(TAG, "onResume");
         }
         mPaused = false;
     }
 
     public void onPause() {
         if (DEBUG) {
-            Log.d(TAG, "onResume");
+            DanmakuLoggers.d(TAG, "onResume");
         }
         //GLSurface在onPause时会造成GLContext丢失，即使调用了setPreserveEGLContextOnPause也存在丢失的情况
         //此处在onPause是默认GLContext丢失，当opengl生命周期启动时GLContext一定存在
@@ -92,7 +91,7 @@ public class GLDanmakuHandler implements Runnable {
 
     public void prepareRender() {
         if (DEBUG) {
-            Log.d(TAG, "prepareRender");
+            DanmakuLoggers.d(TAG, "prepareRender");
         }
         //上层调用让GLSurfaceView渲染，此时对于空闲时执行的任务可以暂时停止，优先渲染
         mPrepareRender = true;
@@ -100,7 +99,7 @@ public class GLDanmakuHandler implements Runnable {
 
     public void addDanmaku(BaseDanmaku danmaku) {
         if (DEBUG) {
-            Log.d(TAG, "addDanmaku");
+            DanmakuLoggers.d(TAG, "addDanmaku");
         }
         if (danmaku == null) {
             return;
@@ -111,7 +110,7 @@ public class GLDanmakuHandler implements Runnable {
 
     public void removeDamaku(BaseDanmaku danmaku) {
         if (DEBUG) {
-            Log.d(TAG, "removeDamaku");
+            DanmakuLoggers.d(TAG, "removeDamaku");
         }
         if (danmaku == null) {
             return;
@@ -122,7 +121,7 @@ public class GLDanmakuHandler implements Runnable {
 
     public void removeAllDanmaku() {
         if (DEBUG) {
-            Log.d(TAG, "removeAllDanmaku");
+            DanmakuLoggers.d(TAG, "removeAllDanmaku");
         }
         mGLViewGroup.removeAll();
         postRun();
@@ -142,7 +141,7 @@ public class GLDanmakuHandler implements Runnable {
 //        if (mPostRunning.compareAndSet(false, true)) {
 //            mGLSurfaceView.queueEvent(this);
 //            if (DEBUG) {
-//                Log.d(TAG, "postRun succeed");
+//                DanmakuLoggers.d(TAG, "postRun succeed");
 //            }
 //            return true;
 //        }
@@ -155,7 +154,7 @@ public class GLDanmakuHandler implements Runnable {
     @Override
     public void run() {
         if (DEBUG) {
-            Log.d(TAG, "postRun start");
+            DanmakuLoggers.d(TAG, "postRun start");
         }
         int size = 0;
         while (mHasGLContext &&
@@ -163,13 +162,13 @@ public class GLDanmakuHandler implements Runnable {
                 (mGLViewGroup.initFirst() ||
                         mGLViewGroup.releaseFirst() ||
                         mPostRunning.compareAndSet(true, false))
-                ) {
+        ) {
             size++;
         }
         //此处忽略线程安全（辅助任务)
         mPostRunning.set(false);
         if (DEBUG) {
-            Log.d(TAG, "postRun end ,run task size " + size);
+            DanmakuLoggers.d(TAG, "postRun end ,run task size " + size);
         }
     }
 }

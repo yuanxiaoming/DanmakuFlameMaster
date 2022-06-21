@@ -154,7 +154,7 @@ public class NativeBitmapFactory {
     public static synchronized Bitmap createBitmap(int width, int height, Bitmap.Config config,
                                                    boolean hasAlpha) {
         if (!nativeLibLoaded || nativeIntField == null) {
-            // Log.e("NativeBitmapFactory", "ndk bitmap create failed");
+            // DanmakuLoggers.e("NativeBitmapFactory", "ndk bitmap create failed");
             return Bitmap.createBitmap(width, height, config);
         }
         return createNativeBitmap(width, height, config, hasAlpha);
@@ -163,8 +163,8 @@ public class NativeBitmapFactory {
     private static Bitmap createNativeBitmap(int width, int height, Config config,
                                              boolean hasAlpha) {
         int nativeConfig = getNativeConfig(config);
-        // Log.e("NativeBitmapFactory", "nativeConfig:" + nativeConfig);
-        // Log.e("NativeBitmapFactory", "create bitmap:" + bitmap);
+        // DanmakuLoggers.e("NativeBitmapFactory", "nativeConfig:" + nativeConfig);
+        // DanmakuLoggers.e("NativeBitmapFactory", "create bitmap:" + bitmap);
         return android.os.Build.VERSION.SDK_INT == 19 ? createBitmap19(width, height,
                 nativeConfig, hasAlpha) : createBitmap(width, height, nativeConfig, hasAlpha);
     }

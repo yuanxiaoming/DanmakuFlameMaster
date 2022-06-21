@@ -1,6 +1,6 @@
 package master.flame.danmaku.gl.utils;
 
-import android.util.Log;
+import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 
 public class SpeedsMeasurement {
     private String mTag;
@@ -19,7 +19,7 @@ public class SpeedsMeasurement {
             lastTime = curr;
             int speed = index - lastIndex;
             lastIndex = index;
-            Log.d(mTag,
+            DanmakuLoggers.d(mTag,
                     "sec=" + seconds +
                             "\tspeed=" + speed +
                             "\t avg=" + index / (seconds == 0 ? 1 : seconds) +
@@ -48,7 +48,7 @@ public class SpeedsMeasurement {
             for (long mTime : mTimes) {
                 totalTimes += mTime;
             }
-            Log.d(mTag, "avg=" + totalTimes / MAX_RECORDER +
+            DanmakuLoggers.d(mTag, "avg=" + totalTimes / MAX_RECORDER +
                     "\ttotalIndex=" + mTaskIndex);
         }
     }

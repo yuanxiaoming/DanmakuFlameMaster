@@ -2,7 +2,6 @@ package master.flame.danmaku.gl.glview.view;
 
 import android.content.Context;
 import android.opengl.GLES20;
-import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -16,6 +15,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import master.flame.danmaku.danmaku.model.BaseDanmaku;
+import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 import master.flame.danmaku.gl.Constants;
 import master.flame.danmaku.gl.glview.GLProgram;
 import master.flame.danmaku.gl.glview.view.provider.GLDanmakuProvider;
@@ -90,7 +90,7 @@ public class GLViewGroup {
         public int compare(GLView o1, GLView o2) {
             if (o1.getImgProvider().getData() == o2.getImgProvider().getData()) {
                 //同一个弹幕,此代码快不应该出现，否则逻辑可能有问题Override
-                Log.w(TAG, "zComparator compare the same damaku override");
+                DanmakuLoggers.w(TAG, "zComparator compare the same damaku override");
                 return 0;
             }
             return o1.getViewElevation() >= o2.getViewElevation() ? 1 : -1;
@@ -129,7 +129,7 @@ public class GLViewGroup {
      */
     public void onGLSurfaceViewCreate() {
         if (DEBUG) {
-            Log.i(TAG, "onGLSurfaceViewCreate");
+            DanmakuLoggers.i(TAG, "onGLSurfaceViewCreate");
         }
         //opengl  create 或者 recreate 时 glcontext 很容易丢失，
         //重新加载一次glsl
@@ -144,7 +144,7 @@ public class GLViewGroup {
      */
     public void onDisplaySizeChanged(int width, int height) {
         if (DEBUG) {
-            Log.i(TAG, "onDisplaySizeChanged width=" + width + "\t height=" + height);
+            DanmakuLoggers.i(TAG, "onDisplaySizeChanged width=" + width + "\t height=" + height);
         }
         GLES20.glViewport(0, 0, width, height);
         mDisplayWidth = width;
@@ -173,7 +173,7 @@ public class GLViewGroup {
             int removeSize = releaseRemoved();
             mReleaseSpeeds.taskEnd();
 
-            Log.i(TAG, "onGLDrawFrame  " +
+            DanmakuLoggers.i(TAG, "onGLDrawFrame  " +
                     "new=" + mNewDanmaku.size() + "  " +
                     "run=" + mRunningViews.size() + "  " +
                     "rmv=" + mRemovingViews.size() + "  " +
@@ -236,7 +236,9 @@ public class GLViewGroup {
         mRunningViews.add(recyclerView);
 
         if (DEBUG_INIT) {
-            Log.i(TAG, "init texture id=" + danmaku.id + "\tloopTime=" + loopTime + "\t reuseGlView=" + reuseGlView);
+            DanmakuLoggers.i(TAG,
+                    "init texture id=" + danmaku.id + "\tloopTime=" + loopTime + "\t reuseGlView=" +
+                            reuseGlView);
         }
         return true;
     }
@@ -270,13 +272,17 @@ public class GLViewGroup {
             }
             if (isFirst) {
                 isFirst = false;
-                GLES20.glUniformMatrix4fv(mGlProgram.glHProject, 1, false, mMatrixProvider.getProjectMatrix(), 0);
-                GLES20.glUniformMatrix4fv(mGlProgram.glHView, 1, false, mMatrixProvider.getViewMatrix(), 0);
+                GLES20.glUniformMatrix4fv(mGlProgram.glHProject, 1, false,
+                        mMatrixProvider.getProjectMatrix(), 0);
+                GLES20.glUniformMatrix4fv(mGlProgram.glHView, 1, false,
+                        mMatrixProvider.getViewMatrix(), 0);
                 GLES20.glUniform1f(mGlProgram.glAlpha, mAlpha);
                 GLES20.glEnableVertexAttribArray(mGlProgram.glHPosition);
                 GLES20.glEnableVertexAttribArray(mGlProgram.glHCoordinate);
-                GLES20.glVertexAttribPointer(mGlProgram.glHPosition, 2, GLES20.GL_FLOAT, false, 0, sPositionBuffer);
-                GLES20.glVertexAttribPointer(mGlProgram.glHCoordinate, 2, GLES20.GL_FLOAT, false, 0, sCoordBuffer);
+                GLES20.glVertexAttribPointer(mGlProgram.glHPosition, 2, GLES20.GL_FLOAT, false, 0,
+                        sPositionBuffer);
+                GLES20.glVertexAttribPointer(mGlProgram.glHCoordinate, 2, GLES20.GL_FLOAT, false, 0,
+                        sCoordBuffer);
                 GLES20.glActiveTexture(GL_TEXTURE0);
                 GLES20.glUniform1i(mGlProgram.glHTexture, 0);
             }
@@ -316,7 +322,7 @@ public class GLViewGroup {
         first.onDestroy();
         if (DEBUG_RELEASE) {
             BaseDanmaku data = (BaseDanmaku) first.getImgProvider().getData();
-            Log.i(TAG, "release id=" + data.id);
+            DanmakuLoggers.i(TAG, "release id=" + data.id);
         }
         mRemovedViews.offer(first);
         return true;
@@ -331,7 +337,7 @@ public class GLViewGroup {
             return;
         }
         if (DEBUG_ADD) {
-            Log.i(TAG, "addDanmu id=" + danmaku.id);
+            DanmakuLoggers.i(TAG, "addDanmu id=" + danmaku.id);
         }
         mNewDanmaku.offer(danmaku);
     }
@@ -345,14 +351,14 @@ public class GLViewGroup {
             //gl线程
             if (DEBUG) {
                 BaseDanmaku data = (BaseDanmaku) ((GLView) view).getImgProvider().getData();
-                Log.i(TAG, "removeView id=" + data.id);
+                DanmakuLoggers.i(TAG, "removeView id=" + data.id);
             }
             //设置回收状态，在下一次绘制时会被移除
             ((GLView) view).setRecyclered(true);
         }
         if (view instanceof BaseDanmaku) {
             if (DEBUG) {
-                Log.i(TAG, "removeView id=" + ((BaseDanmaku) view).id);
+                DanmakuLoggers.i(TAG, "removeView id=" + ((BaseDanmaku) view).id);
             }
             if (!mNewDanmaku.remove(view)) {
                 for (GLView glView : new ArrayList<>(mRunningViews)) {
@@ -367,7 +373,7 @@ public class GLViewGroup {
 
     public void removeAll() {
         if (DEBUG) {
-            Log.i(TAG, "removeAll");
+            DanmakuLoggers.i(TAG, "removeAll");
         }
         mNewDanmaku.clear();
         for (GLView glView : new ArrayList<>(mRunningViews)) {

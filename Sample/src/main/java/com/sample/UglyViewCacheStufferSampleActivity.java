@@ -18,7 +18,6 @@ import android.text.Spanned;
 import android.text.TextPaint;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ImageSpan;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.View;
@@ -61,6 +60,7 @@ import master.flame.danmaku.danmaku.model.android.SpannedCacheStuffer;
 import master.flame.danmaku.danmaku.model.android.ViewCacheStuffer;
 import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
 import master.flame.danmaku.danmaku.parser.IDataSource;
+import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 import master.flame.danmaku.danmaku.util.IOUtils;
 import master.flame.danmaku.danmaku.util.SystemClock;
 
@@ -228,9 +228,10 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
 //                return true;
 //            }
             if (this.danmaku.text.toString().contains("textview")) {
-                Log.e("DFM", (SystemClock.uptimeMillis() - this.start) + "ms=====> inside" +
-                        danmaku.tag + ":" + danmaku.getActualTime() + ",url: bitmap" +
-                        (bitmap == null));
+                DanmakuLoggers
+                        .e("DFM", (SystemClock.uptimeMillis() - this.start) + "ms=====> inside" +
+                                danmaku.tag + ":" + danmaku.getActualTime() + ",url: bitmap" +
+                                (bitmap == null));
             }
             this.bitmap = bitmap;
             IDanmakuView danmakuView = danmakuViewRef.get();
@@ -325,7 +326,7 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
 
                     @Override
                     public MyViewHolder onCreateViewHolder(int viewType) {
-                        Log.e("DFM", "onCreateViewHolder:" + viewType);
+                        DanmakuLoggers.e("DFM", "onCreateViewHolder:" + viewType);
                         return new MyViewHolder(
                                 View.inflate(getApplicationContext(), R.layout.layout_view_cache,
                                         null));
@@ -347,15 +348,18 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
                         if (imageWare != null) {
                             bitmap = imageWare.bitmap;
                             if (danmaku.text.toString().contains("textview")) {
-                                Log.e("DFM", "onBindViewHolder======> bitmap:" + (bitmap == null) +
-                                        "  " + danmaku.tag + "url:" + imageWare.getImageUri());
+                                DanmakuLoggers.e("DFM",
+                                        "onBindViewHolder======> bitmap:" + (bitmap == null) +
+                                                "  " + danmaku.tag + "url:" +
+                                                imageWare.getImageUri());
                             }
                         }
                         if (bitmap != null) {
                             viewHolder.mIcon.setImageBitmap(bitmap);
                             if (danmaku.text.toString().contains("textview")) {
-                                Log.e("DFM", "onBindViewHolder======>" + danmaku.tag + "url:" +
-                                        imageWare.getImageUri());
+                                DanmakuLoggers
+                                        .e("DFM", "onBindViewHolder======>" + danmaku.tag + "url:" +
+                                                imageWare.getImageUri());
                             }
                         } else {
                             viewHolder.mIcon.setImageResource(R.drawable.ic_launcher);
@@ -369,7 +373,7 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
                             ImageLoader.getInstance().cancelDisplayTask(imageWare);
                         }
                         danmaku.setTag(null);
-                        Log.e("DFM", "releaseResource url:" + danmaku.text);
+                        DanmakuLoggers.e("DFM", "releaseResource url:" + danmaku.text);
                     }
 
                     String[] avatars =
@@ -390,8 +394,9 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
                             danmaku.setTag(imageWare);
                         }
                         if (danmaku.text.toString().contains("textview")) {
-                            Log.e("DFM", "onAsyncLoadResource======>" + danmaku.tag + "url:" +
-                                    imageWare.getImageUri());
+                            DanmakuLoggers
+                                    .e("DFM", "onAsyncLoadResource======>" + danmaku.tag + "url:" +
+                                            imageWare.getImageUri());
                         }
                         ImageLoader.getInstance().displayImage(imageWare.getImageUri(), imageWare);
                     }
@@ -414,7 +419,7 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
 
                 @Override
                 public void danmakuShown(BaseDanmaku danmaku) {
-//                    Log.d("DFM", "danmakuShown(): text=" + danmaku.text);
+                    //DanmakuLoggers.d("DFM", "danmakuShown(): text=" + danmaku.text);
                 }
 
                 @Override
@@ -426,10 +431,11 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
 
                 @Override
                 public boolean onDanmakuClick(IDanmakus danmakus) {
-                    Log.d("DFM", "onDanmakuClick: danmakus size:" + danmakus.size());
+                    DanmakuLoggers.d("DFM", "onDanmakuClick: danmakus size:" + danmakus.size());
                     BaseDanmaku latest = danmakus.last();
                     if (null != latest) {
-                        Log.d("DFM", "onDanmakuClick: text of latest danmaku:" + latest.text);
+                        DanmakuLoggers
+                                .d("DFM", "onDanmakuClick: text of latest danmaku:" + latest.text);
                         return true;
                     }
                     return false;

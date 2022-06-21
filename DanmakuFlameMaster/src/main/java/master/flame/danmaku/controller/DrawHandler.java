@@ -576,7 +576,7 @@ public class DrawHandler extends Handler {
             if (mCallback != null) {
                 mCallback.updateTimer(timer);
             }
-//            Log.e("DrawHandler", time+"|d:" + d  + "RemaingTime:" + mRemainingTime + ",gapTime:" + gapTime + ",rtim:" + mRenderingState.consumingTime + ",average:" + averageTime);
+//            DanmakuLoggers.e("DrawHandler", time+"|d:" + d  + "RemaingTime:" + mRemainingTime + ",gapTime:" + gapTime + ",rtim:" + mRenderingState.consumingTime + ",average:" + averageTime);
         }
 
         mInSyncAction = false;
@@ -596,7 +596,7 @@ public class DrawHandler extends Handler {
         //mFrameUpdateRate = Math.max(16, averageFrameConsumingTime / 15 * 15);
         mFrameUpdateRate = getConfig().getFrameUpdateRate();
         mThresholdTime = mFrameUpdateRate + 3;
-//        Log.i("DrawHandler", "initRenderingConfigs test-fps:" + averageFrameConsumingTime + "ms,mCordonTime:"
+//        DanmakuLoggers.i("DrawHandler", "initRenderingConfigs test-fps:" + averageFrameConsumingTime + "ms,mCordonTime:"
 //                + mCordonTime + ",mFrameRefreshingRate:" + mFrameUpdateRate);
     }
 

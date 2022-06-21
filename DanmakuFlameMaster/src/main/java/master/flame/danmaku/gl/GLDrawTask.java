@@ -5,7 +5,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 import android.util.Pair;
 
 import java.util.Comparator;
@@ -22,6 +21,7 @@ import master.flame.danmaku.danmaku.model.IDrawingCache;
 import master.flame.danmaku.danmaku.model.android.DanmakuContext;
 import master.flame.danmaku.danmaku.model.android.Danmakus;
 import master.flame.danmaku.danmaku.model.android.DrawingCacheHolder;
+import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 import master.flame.danmaku.danmaku.util.DanmakuUtils;
 import master.flame.danmaku.gl.glview.GLUtils;
 import master.flame.danmaku.gl.wedget.GLShareable;
@@ -45,7 +45,8 @@ public class GLDrawTask extends DrawTask {
         this(null, timer, context, taskListener);
     }
 
-    public GLDrawTask(Looper lopper, DanmakuTimer timer, DanmakuContext context, TaskListener taskListener) {
+    public GLDrawTask(Looper lopper, DanmakuTimer timer, DanmakuContext context,
+                      TaskListener taskListener) {
         super(timer, context, taskListener);
         NativeBitmapFactory.loadLibs();
         mLooper = lopper;
@@ -60,7 +61,7 @@ public class GLDrawTask extends DrawTask {
         super.addDanmaku(danmaku);
         if (mCacheManager != null) {
             if (DEBUG) {
-                Log.i(TAG, "addDanmaku id = " + danmaku.id);
+                DanmakuLoggers.i(TAG, "addDanmaku id = " + danmaku.id);
             }
             mCacheManager.addDanmaku(danmaku);
         }
@@ -71,7 +72,7 @@ public class GLDrawTask extends DrawTask {
         super.invalidateDanmaku(item, remeasure);
         if (mCacheManager != null) {
             if (DEBUG) {
-                Log.i(TAG, "invalidateDanmaku id = " + item.id);
+                DanmakuLoggers.i(TAG, "invalidateDanmaku id = " + item.id);
             }
             mCacheManager.rebuildDanmaku(item);
         }
@@ -82,7 +83,9 @@ public class GLDrawTask extends DrawTask {
         IDanmakus subnew = subnew(0, Long.MAX_VALUE);
         super.removeAllDanmakus(isClearDanmakusOnScreen);
         if (DEBUG) {
-            Log.i(TAG, "removeAllDanmakus isClearDanmakusOnScreen = " + isClearDanmakusOnScreen + "\ttotal size =  " + (subnew == null ? 0 : subnew.size()));
+            DanmakuLoggers.i(TAG,
+                    "removeAllDanmakus isClearDanmakusOnScreen = " + isClearDanmakusOnScreen +
+                            "\ttotal size =  " + (subnew == null ? 0 : subnew.size()));
         }
         if (isClearDanmakusOnScreen) {
             mDiplayer.getRenderer().getGLDanmakuHandler().removeAllDanmaku();
@@ -91,7 +94,7 @@ public class GLDrawTask extends DrawTask {
             mCacheManager.removeAllCachedDanmaku();
         } else if (subnew != null && !subnew.isEmpty()) {
             //此处不应该被调用到
-            Log.w(TAG, "此处不应该被调用到，请检查一下代码逻辑");
+            DanmakuLoggers.w(TAG, "此处不应该被调用到，请检查一下代码逻辑");
             subnew.forEach(new IDanmakus.Consumer<BaseDanmaku, Void>() {
                 @Override
                 public int accept(BaseDanmaku danmaku) {
@@ -128,14 +131,14 @@ public class GLDrawTask extends DrawTask {
             return;
         }
         if (DEBUG) {
-            Log.i(TAG, "onDanmakuRemoved id = " + danmaku.id);
+            DanmakuLoggers.i(TAG, "onDanmakuRemoved id = " + danmaku.id);
         }
         mDiplayer.getRenderer().getGLDanmakuHandler().removeDamaku(danmaku);
         if (mCacheManager != null) {
             mCacheManager.removeDanmaku(danmaku);
         } else {
             //此处不应该被调用到
-            Log.w(TAG, "此处不应该被调用到，请检查一下代码逻辑");
+            DanmakuLoggers.w(TAG, "此处不应该被调用到，请检查一下代码逻辑");
             IDrawingCache<?> cache = danmaku.getDrawingCache();
             if (cache != null) {
                 cache.destroy();
@@ -148,7 +151,7 @@ public class GLDrawTask extends DrawTask {
     public void start() {
         super.start();
         if (DEBUG) {
-            Log.i(TAG, "GLDrawTask start");
+            DanmakuLoggers.i(TAG, "GLDrawTask start");
         }
         NativeBitmapFactory.loadLibs();
         if (mCacheManager == null) {
@@ -162,7 +165,7 @@ public class GLDrawTask extends DrawTask {
     public void onPlayStateChanged(int state) {
         super.onPlayStateChanged(state);
         if (DEBUG) {
-            Log.i(TAG, "onPlayStateChanged state = " + state);
+            DanmakuLoggers.i(TAG, "onPlayStateChanged state = " + state);
         }
         if (mCacheManager != null) {
             mCacheManager.onPlayStateChanged(state);
@@ -173,7 +176,7 @@ public class GLDrawTask extends DrawTask {
     public void quit() {
         super.quit();
         if (DEBUG) {
-            Log.i(TAG, "GLDrawTask quit");
+            DanmakuLoggers.i(TAG, "GLDrawTask quit");
         }
         long startTime = System.nanoTime();
         mRenderer.setCacheManager(null);
@@ -183,10 +186,9 @@ public class GLDrawTask extends DrawTask {
         }
         NativeBitmapFactory.releaseLibs();
         if (DEBUG) {
-            Log.i(TAG, "GLDrawTask quit time = " + (System.nanoTime() - startTime));
+            DanmakuLoggers.i(TAG, "GLDrawTask quit time = " + (System.nanoTime() - startTime));
         }
     }
-
 
     public class GLCacheManager implements ICacheManager {
         private static final String TAG = "GLCacheManager";
@@ -197,15 +199,17 @@ public class GLDrawTask extends DrawTask {
         private final Object mMonitor = new Object();
         private boolean mExited = false;
 
-        private final TreeSet<Pair<BaseDanmaku, Integer>> mCacheTasks = new TreeSet<>(new Comparator<Pair<BaseDanmaku, Integer>>() {
-            @Override
-            public int compare(Pair<BaseDanmaku, Integer> o1, Pair<BaseDanmaku, Integer> o2) {
-                if (o2.first == o1.first) {
-                    return 0;
-                }
-                return DanmakuUtils.compare(o1.first, o2.first);
-            }
-        });
+        private final TreeSet<Pair<BaseDanmaku, Integer>> mCacheTasks =
+                new TreeSet<>(new Comparator<Pair<BaseDanmaku, Integer>>() {
+                    @Override
+                    public int compare(Pair<BaseDanmaku, Integer> o1,
+                                       Pair<BaseDanmaku, Integer> o2) {
+                        if (o2.first == o1.first) {
+                            return 0;
+                        }
+                        return DanmakuUtils.compare(o1.first, o2.first);
+                    }
+                });
 
         /**
          * 存储已经缓存过的弹幕，里面包含bitmap和纹理,所以必须保证这些弹幕以后做一次释放操作，否则会有内存泄漏
@@ -216,7 +220,7 @@ public class GLDrawTask extends DrawTask {
         public void addDanmaku(BaseDanmaku danmaku) {
             if (mHandler != null && danmaku != null) {
                 if (DEBUG) {
-                    Log.i(TAG, "addDanmaku id = " + danmaku.id);
+                    DanmakuLoggers.i(TAG, "addDanmaku id = " + danmaku.id);
                 }
                 synchronized (mCacheTasks) {
                     mCacheTasks.add(new Pair<>(danmaku, GLCacheDrawHandler.ADD_DANMAKU));
@@ -233,7 +237,7 @@ public class GLDrawTask extends DrawTask {
         void rebuildDanmaku(BaseDanmaku danmaku) {
             if (mHandler != null && danmaku != null) {
                 if (DEBUG) {
-                    Log.i(TAG, "rebuildDanmaku id = " + danmaku.id);
+                    DanmakuLoggers.i(TAG, "rebuildDanmaku id = " + danmaku.id);
                 }
                 synchronized (mCacheTasks) {
                     mCacheTasks.add(new Pair<>(danmaku, GLCacheDrawHandler.REBUILD_DANMAKU));
@@ -245,7 +249,7 @@ public class GLDrawTask extends DrawTask {
         void removeDanmaku(BaseDanmaku danmaku) {
             if (mHandler != null) {
                 if (DEBUG) {
-                    Log.i(TAG, "removeCachedDanmaku id = " + danmaku.id);
+                    DanmakuLoggers.i(TAG, "removeCachedDanmaku id = " + danmaku.id);
                 }
                 synchronized (mCacheTasks) {
                     mCacheTasks.add(new Pair<>(danmaku, GLCacheDrawHandler.REMOVE_DANMAKU));
@@ -257,18 +261,19 @@ public class GLDrawTask extends DrawTask {
         void removeAllCachedDanmaku() {
             if (mHandler != null) {
                 if (DEBUG) {
-                    Log.i(TAG, "removeAllCachedDanmaku");
+                    DanmakuLoggers.i(TAG, "removeAllCachedDanmaku");
                 }
                 synchronized (mCacheTasks) {
                     mCacheTasks.clear();
-                    mHandler.obtainMessage(GLCacheDrawHandler.REMOVE_ALL_CACHED_DANMAKU).sendToTarget();
+                    mHandler.obtainMessage(GLCacheDrawHandler.REMOVE_ALL_CACHED_DANMAKU)
+                            .sendToTarget();
                 }
             }
         }
 
         public void start() {
             if (DEBUG) {
-                Log.i(TAG, "start");
+                DanmakuLoggers.i(TAG, "start");
             }
             Looper workLooper = mLooper;
             if (workLooper == null) {
@@ -288,7 +293,7 @@ public class GLDrawTask extends DrawTask {
 
         public void pause() {
             if (DEBUG) {
-                Log.i(TAG, "pause");
+                DanmakuLoggers.i(TAG, "pause");
             }
             if (mHandler != null) {
                 mHandler.pause();
@@ -297,7 +302,7 @@ public class GLDrawTask extends DrawTask {
 
         void onPlayStateChanged(int state) {
             if (DEBUG) {
-                Log.i(TAG, "onPlayStateChanged state = " + state);
+                DanmakuLoggers.i(TAG, "onPlayStateChanged state = " + state);
             }
             if (state == IDrawTask.PLAY_STATE_PAUSE) {
                 pause();
@@ -308,7 +313,7 @@ public class GLDrawTask extends DrawTask {
 
         public void quit() {
             if (DEBUG) {
-                Log.i(TAG, "quit ");
+                DanmakuLoggers.i(TAG, "quit ");
             }
             synchronized (mCacheTasks) {
                 mCacheTasks.clear();
@@ -339,7 +344,7 @@ public class GLDrawTask extends DrawTask {
                 }
             }
             if (DEBUG) {
-                Log.i(TAG, "quit time = " + (System.nanoTime() - startTime));
+                DanmakuLoggers.i(TAG, "quit time = " + (System.nanoTime() - startTime));
             }
         }
 
@@ -377,7 +382,7 @@ public class GLDrawTask extends DrawTask {
             public void handleMessage(Message msg) {
                 int what = msg.what;
                 if (DEBUG) {
-                    Log.i(TAG, "handleMessage what = " + what);
+                    DanmakuLoggers.i(TAG, "handleMessage what = " + what);
                 }
                 if (mPause && what != QUIT) {
                     //对于停止状态，只处理QUIT操作
@@ -388,7 +393,8 @@ public class GLDrawTask extends DrawTask {
                     //共享渲染线程的glcontext
                     int tryTimes = 0;
                     //尝试三次
-                    while (tryTimes++ < 3 && (mGLShareHelper = GLShareable.GLShareHelper.makeSharedGlContext(mDiplayer.getRenderer())) == null) {
+                    while (tryTimes++ < 3 && (mGLShareHelper = GLShareable.GLShareHelper
+                            .makeSharedGlContext(mDiplayer.getRenderer())) == null) {
                         try {
                             Thread.sleep(20);
                         } catch (InterruptedException e) {
@@ -411,9 +417,10 @@ public class GLDrawTask extends DrawTask {
                         mHandler.removeMessages(GLCacheDrawHandler.HANDLE_DANMAKU);
                         int size = 0;
                         long startTime = System.nanoTime();
-                        while ((System.nanoTime() - startTime < mHandleTime) && (size = handleDanmaku()) > 0) {
+                        while ((System.nanoTime() - startTime < mHandleTime) &&
+                                (size = handleDanmaku()) > 0) {
                             if (DEBUG) {
-                                Log.d(TAG, "remain size=" + size);
+                                DanmakuLoggers.d(TAG, "remain size=" + size);
                             }
                         }
                         if (size > 0) {
@@ -443,7 +450,7 @@ public class GLDrawTask extends DrawTask {
 
             public void start() {
                 if (DEBUG) {
-                    Log.i(TAG, "start");
+                    DanmakuLoggers.i(TAG, "start");
                 }
                 mPause = false;
                 removeMessages(DISPATCH_ACTIONS);
@@ -453,7 +460,7 @@ public class GLDrawTask extends DrawTask {
 
             public void pause() {
                 if (DEBUG) {
-                    Log.i(TAG, "pause");
+                    DanmakuLoggers.i(TAG, "pause");
                 }
                 mPause = true;
                 //pause默认没有glcontext
@@ -473,13 +480,15 @@ public class GLDrawTask extends DrawTask {
                             if (buildDanmakuCache(cacheTask.first, false)) {
                                 //通知gl bitmap准备好了
                                 mCachedDanmakus.addItem(cacheTask.first);
-                                mDiplayer.getRenderer().getGLDanmakuHandler().addDanmaku((cacheTask.first));
+                                mDiplayer.getRenderer().getGLDanmakuHandler()
+                                        .addDanmaku((cacheTask.first));
                             }
                             break;
                         case REBUILD_DANMAKU:
                             if (buildDanmakuCache(cacheTask.first, true)) {
                                 mCachedDanmakus.addItem((cacheTask.first));
-                                mDiplayer.getRenderer().getGLDanmakuHandler().addDanmaku(cacheTask.first);
+                                mDiplayer.getRenderer().getGLDanmakuHandler()
+                                        .addDanmaku(cacheTask.first);
                             }
                             break;
                         case REMOVE_DANMAKU:
@@ -517,10 +526,11 @@ public class GLDrawTask extends DrawTask {
                     item.prepare(mDisp, true);
                 }
                 if (DEBUG) {
-                    Log.i(TAG, "buildDanmakuCache id = " + item.id);
+                    DanmakuLoggers.i(TAG, "buildDanmakuCache id = " + item.id);
                 }
                 //构建缓存
-                item.cache = DanmakuUtils.buildDanmakuDrawingCache(item, mDisp, null, mContext.cachingPolicy.bitsPerPixelOfCache);
+                item.cache = DanmakuUtils.buildDanmakuDrawingCache(item, mDisp, null,
+                        mContext.cachingPolicy.bitsPerPixelOfCache);
                 return createTexture(item);
             }
 
@@ -537,7 +547,7 @@ public class GLDrawTask extends DrawTask {
                     return false;
                 }
                 if (DEBUG) {
-                    Log.i(TAG, "destroyCache id = " + item.id);
+                    DanmakuLoggers.i(TAG, "destroyCache id = " + item.id);
                 }
                 cache.destroy();
                 item.cache = null;
@@ -566,7 +576,7 @@ public class GLDrawTask extends DrawTask {
                     destroyCache(item, false);
                 }
                 if (DEBUG) {
-                    Log.d(TAG, "createTexture textid=" + item.mGLTextureId);
+                    DanmakuLoggers.d(TAG, "createTexture textid=" + item.mGLTextureId);
                 }
                 return true;
             }
@@ -578,7 +588,7 @@ public class GLDrawTask extends DrawTask {
                 if (item.mGLTextureId != 0) {
                     //销毁之前的纹理
                     if (DEBUG) {
-                        Log.d(TAG, "destroyTexture textid=" + item.mGLTextureId);
+                        DanmakuLoggers.d(TAG, "destroyTexture textid=" + item.mGLTextureId);
                     }
                     GLES20.glDeleteTextures(1, new int[]{item.mGLTextureId}, 0);
                     item.mGLTextureId = 0;
@@ -606,17 +616,21 @@ public class GLDrawTask extends DrawTask {
                             return ACTION_BREAK;
                         }
                         if (!item.hasPassedFilter()) {
-                            mContext.mDanmakuFilters.filter(item, orderInScreen, sizeInScreen, null, true, mContext);
+                            mContext.mDanmakuFilters
+                                    .filter(item, orderInScreen, sizeInScreen, null, true,
+                                            mContext);
                         }
                         if (item.priority == 0 && item.isFiltered()) {
                             return ACTION_CONTINUE;
                         }
                         if (item.getType() == BaseDanmaku.TYPE_SCROLL_RL) {
                             // 同屏弹幕密度只对滚动弹幕有效
-                            int screenIndex = (int) ((item.getActualTime() - mTimer.currMillisecond) / mContext.mDanmakuFactory.MAX_DANMAKU_DURATION);
-                            if (currScreenIndex == screenIndex)
+                            int screenIndex =
+                                    (int) ((item.getActualTime() - mTimer.currMillisecond) /
+                                            mContext.mDanmakuFactory.MAX_DANMAKU_DURATION);
+                            if (currScreenIndex == screenIndex) {
                                 orderInScreen++;
-                            else {
+                            } else {
                                 orderInScreen = 0;
                                 currScreenIndex = screenIndex;
                             }
@@ -631,13 +645,15 @@ public class GLDrawTask extends DrawTask {
                     }
                 });
                 if (DEBUG) {
-                    Log.i(TAG, "buildFutureDanmaku validBuildSize = " + validBuildSize.get() + "\t succeedBuildSize = " + succeedBuildSize.get());
+                    DanmakuLoggers.i(TAG, "buildFutureDanmaku validBuildSize = " + validBuildSize.get() +
+                            "\t succeedBuildSize = " + succeedBuildSize.get());
                 }
             }
 
             private void clearAllCachedDanmakus(final boolean force) {
                 if (DEBUG) {
-                    Log.i(TAG, "clearAllCachedDanmakus force = " + force + "\t size = " + mCachedDanmakus.size());
+                    DanmakuLoggers.i(TAG, "clearAllCachedDanmakus force = " + force + "\t size = " +
+                            mCachedDanmakus.size());
                 }
                 mCachedDanmakus.forEach(new IDanmakus.DefaultConsumer<BaseDanmaku>() {
                     @Override

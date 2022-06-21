@@ -467,7 +467,8 @@ public class AndroidDisplayer extends AbsDisplayer<Canvas, Typeface> {
     }
 
     public boolean canCacheDrawn() {
-        return !(mDanmakuContext.get().cachingPolicy.mCacheDrawEnabled &&
+        return !(mDanmakuContext != null && mDanmakuContext.get() != null &&
+                mDanmakuContext.get().cachingPolicy.mCacheDrawEnabled &&
                 mDanmakuContext.get().cachingPolicy.mAllowDelayInCacheModel);
     }
 
@@ -656,7 +657,6 @@ public class AndroidDisplayer extends AbsDisplayer<Canvas, Typeface> {
     public int getMaximumCacheHeight() {
         return mMaximumBitmapHeight;
     }
-
 
 
 }

@@ -25,10 +25,10 @@ import master.flame.danmaku.danmaku.model.IDrawingCache;
 import master.flame.danmaku.danmaku.model.android.DanmakuContext;
 import master.flame.danmaku.danmaku.renderer.IRenderer;
 import master.flame.danmaku.danmaku.renderer.Renderer;
-
+import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 
 public class DanmakuRenderer extends Renderer {
-
+    private static final String TAG = "DanmakuRenderer";
     private class Consumer extends IDanmakus.DefaultConsumer<BaseDanmaku> {
         private BaseDanmaku lastItem;
         public IDisplayer disp;
@@ -86,11 +86,16 @@ public class DanmakuRenderer extends Renderer {
                 if (drawItem.lines == null && drawItem.getBottom() > disp.getHeight()) {
                     return ACTION_CONTINUE;    // skip bottom outside danmaku
                 }
-                if (drawItem.getDrawingCache() == null || drawItem.getDrawingCache().get() == null) {
-                    //没有缓存,本线程构建缓存
-                    if (mCacheManager != null) {
-                        mCacheManager.buildDanmakuCache(drawItem);
+                try {
+                    if (drawItem.getDrawingCache() == null ||
+                            drawItem.getDrawingCache().get() == null) {
+                        //没有缓存,本线程构建缓存
+                        if (mCacheManager != null) {
+                            mCacheManager.buildDanmakuCache(drawItem);
+                        }
                     }
+                } catch (Throwable throwable) {
+                    DanmakuLoggers.e(TAG, throwable);
                 }
                 int renderingType = drawItem.draw(disp);
                 if (renderingType == IRenderer.CACHE_RENDERING) {

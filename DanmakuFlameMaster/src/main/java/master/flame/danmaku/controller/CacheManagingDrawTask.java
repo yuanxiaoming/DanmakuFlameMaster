@@ -261,8 +261,9 @@ public class CacheManagingDrawTask extends DrawTask {
             if (mHandler != null) {
                 mHandler.requestCancelCaching();
                 mHandler.obtainMessage(CacheHandler.REBUILD_CACHE, danmaku).sendToTarget();
-                // mHandler.sendEmptyMessage(CacheHandler.DISABLE_CANCEL_FLAG);
-                // requestBuild(0);
+               //todo fix
+               // mHandler.sendEmptyMessage(CacheHandler.DISABLE_CANCEL_FLAG);
+               // requestBuild(0);
             }
         }
 
@@ -284,7 +285,8 @@ public class CacheManagingDrawTask extends DrawTask {
                 mDrawingNotify.notifyAll();
             }
             if (mHandler != null) {
-               //mHandler.removeCallbacksAndMessages(null);
+                //todo fix
+                //mHandler.removeCallbacksAndMessages(null);
                 mHandler.pause();
                 mHandler = null;
             }
@@ -427,6 +429,7 @@ public class CacheManagingDrawTask extends DrawTask {
                             }
                             //else 回收尺寸过大的cache
                         }
+                        //todo fix 是否需要30秒
                         // if (!mEndFlag) {
                         //     synchronized (mDrawingNotify) {
                         //         try {
@@ -1179,7 +1182,7 @@ public class CacheManagingDrawTask extends DrawTask {
         } else {
             if (mCacheManager != null) {
                 mCacheManager.requestClearUnused();
-                mCacheManager.requestBuild(0l);
+                mCacheManager.requestBuild(0L);
             }
         }
 

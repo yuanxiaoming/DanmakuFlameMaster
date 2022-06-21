@@ -16,7 +16,7 @@ import master.flame.danmaku.gl.wedget.GLHandlerSurfaceView;
 public class GLDanmakuHandler implements Runnable {
     private static final String TAG = "GLDanmakuHandler";
     private static final boolean DEBUG = GLConstants.DEBUG_GLDANMAKUHANDLER;
-    private GLHandlerSurfaceView mGLSurfaceView;
+    //private GLHandlerSurfaceView mGLSurfaceView;
     private final GLViewGroup mGLViewGroup;
     private boolean mPaused = true;
     private volatile boolean mPrepareRender = false;
@@ -27,7 +27,7 @@ public class GLDanmakuHandler implements Runnable {
         if (surfaceView == null) {
             throw new RuntimeException("surfaceView 不能为空");
         }
-        this.mGLSurfaceView = surfaceView;
+        //this.mGLSurfaceView = surfaceView;
         this.mGLViewGroup = new GLViewGroup(surfaceView.getContext());
         mGLViewGroup.setViewsReverseState(false, false);
     }

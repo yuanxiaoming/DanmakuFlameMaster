@@ -42,6 +42,9 @@ public class DrawingCacheHolder {
             recycleBitmapArray();
             return;
         }
+        if (w <= 0 || h <= 0) {
+            return;
+        }
         if (bitmap != null) {
             recycle();
         }

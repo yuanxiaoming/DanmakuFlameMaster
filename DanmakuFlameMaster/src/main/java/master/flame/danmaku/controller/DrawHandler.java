@@ -40,6 +40,8 @@ import master.flame.danmaku.danmaku.model.android.DanmakuContext;
 import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
 import master.flame.danmaku.danmaku.renderer.IRenderer.RenderingState;
 import master.flame.danmaku.danmaku.util.SystemClock;
+import master.flame.danmaku.gl.AndroidGLDisplayer;
+import master.flame.danmaku.gl.GLDrawTask;
 import tv.cjump.jni.DeviceUtils;
 
 public class DrawHandler extends Handler {
@@ -574,7 +576,7 @@ public class DrawHandler extends Handler {
             if (mCallback != null) {
                 mCallback.updateTimer(timer);
             }
-//            Log.e("DrawHandler", time+"|d:" + d  + "RemaingTime:" + mRemainingTime + ",gapTime:" + gapTime + ",rtim:" + mRenderingState.consumingTime + ",average:" + averageTime);
+            //DanmakuLoggers.e("DrawHandler", time+"|d:" + d  + "RemaingTime:" + mRemainingTime + ",gapTime:" + gapTime + ",rtim:" + mRenderingState.consumingTime + ",average:" + averageTime);
         }
 
         mInSyncAction = false;
@@ -594,7 +596,7 @@ public class DrawHandler extends Handler {
         //mFrameUpdateRate = Math.max(16, averageFrameConsumingTime / 15 * 15);
         mFrameUpdateRate = getConfig().getFrameUpdateRate();
         mThresholdTime = mFrameUpdateRate + 3;
-//        Log.i("DrawHandler", "initRenderingConfigs test-fps:" + averageFrameConsumingTime + "ms,mCordonTime:"
+//        DanmakuLoggers.i("DrawHandler", "initRenderingConfigs test-fps:" + averageFrameConsumingTime + "ms,mCordonTime:"
 //                + mCordonTime + ",mFrameRefreshingRate:" + mFrameUpdateRate);
     }
 
@@ -665,9 +667,17 @@ public class DrawHandler extends Handler {
                 displayMetrics.scaledDensity);
         mDisp.resetSlopPixel(mContext.scaleTextSize);
         mDisp.setHardwareAccelerated(isHardwareAccelerated);
-        IDrawTask task = useDrwaingCache ?
-                new CacheManagingDrawTask(timer, mContext, taskListener)
-                : new DrawTask(timer, mContext, taskListener);
+
+        mContext.cachingPolicy.mCacheDrawEnabled =
+                (useDrwaingCache || mDisp instanceof AndroidGLDisplayer);
+        IDrawTask task = mDisp instanceof AndroidGLDisplayer ?
+                new GLDrawTask(timer, mContext, taskListener) :
+                (useDrwaingCache ? new CacheManagingDrawTask(timer, mContext, taskListener) :
+                        new DrawTask(timer, mContext, taskListener));
+
+        // IDrawTask task = useDrwaingCache ?
+        //         new CacheManagingDrawTask(timer, mContext, taskListener)
+        //         : new DrawTask(timer, mContext, taskListener);
         task.setParser(mParser);
         task.prepare();
         obtainMessage(NOTIFY_DISP_SIZE_CHANGED, false).sendToTarget();

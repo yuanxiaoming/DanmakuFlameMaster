@@ -8,7 +8,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Debug;
 import android.test.InstrumentationTestCase;
-import android.util.Log;
 
 import junit.framework.Assert;
 
@@ -66,7 +65,7 @@ public class NativeBitmapFactoryTest extends InstrumentationTestCase {
             bitmaps.add(bitmap);
         }
         updateHeapValue(sb);
-        Log.d(TAG, sb.toString());
+        DanmakuLoggers.d(TAG, sb.toString());
         for (Bitmap bitmap : bitmaps) {
             bitmap.recycle();
         }
@@ -97,7 +96,7 @@ public class NativeBitmapFactoryTest extends InstrumentationTestCase {
         appendValue(sb, "\n\n", "===== before create 50 DalvikBitmap", "\n\n");
         updateHeapValue(sb);
         final String message = sb.toString();
-        Log.i(TAG, message);
+        DanmakuLoggers.i(TAG, message);
         sb = new StringBuilder();
         ArrayList<Bitmap> bitmaps = new ArrayList<>();
         for (int i = 0; i < 150; i++) {
@@ -107,7 +106,7 @@ public class NativeBitmapFactoryTest extends InstrumentationTestCase {
             bitmaps.add(bitmap);
         }
         updateHeapValue(sb);
-        Log.d(TAG, sb.toString());
+        DanmakuLoggers.d(TAG, sb.toString());
         for (Bitmap bitmap : bitmaps) {
             bitmap.recycle();
         }

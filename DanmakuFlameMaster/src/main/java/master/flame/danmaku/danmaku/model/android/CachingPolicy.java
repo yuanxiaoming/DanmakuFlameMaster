@@ -18,16 +18,21 @@ public class CachingPolicy {
     public final static int CACHE_PERIOD_AUTO = 0;
     public final static int CACHE_PERIOD_NOT_RECYCLE = -1;
 
-    public final static CachingPolicy POLICY_LAZY = new CachingPolicy(BMP_BPP_ARGB_4444, 0.3f, CACHE_PERIOD_AUTO, 50, 0.01f);
-    public final static CachingPolicy POLICY_GREEDY = new CachingPolicy(BMP_BPP_ARGB_4444, 0.5f, CACHE_PERIOD_NOT_RECYCLE, 50, 0.005f);
+    public final static CachingPolicy POLICY_LAZY =
+            new CachingPolicy(BMP_BPP_ARGB_4444, 0.3f,
+                    CACHE_PERIOD_AUTO, 50, 0.01f);
+    public final static CachingPolicy POLICY_GREEDY =
+            new CachingPolicy(BMP_BPP_ARGB_4444, 0.5f,
+                    CACHE_PERIOD_NOT_RECYCLE, 50, 0.005f);
     public final static CachingPolicy POLICY_DEFAULT = POLICY_LAZY;
 
-
-    public CachingPolicy(int bitsPerPixelOfCache, float maxCachePoolSizeFactorPercentage, long periodOfRecycle, int reusableOffsetPixel, float forceRecyleThreshold) {
+    public CachingPolicy(int bitsPerPixelOfCache, float maxCachePoolSizeFactorPercentage,
+                         long periodOfRecycle, int reusableOffsetPixel,
+                         float forceRecyleThreshold) {
         this.bitsPerPixelOfCache = bitsPerPixelOfCache;
         /* Note: as of {@link android.os.Build.VERSION_CODES#KITKAT},
-        * any bitmap created with this configuration will be created
-        * using {@link #ARGB_8888} instead.*/
+         * any bitmap created with this configuration will be created
+         * using {@link #ARGB_8888} instead.*/
         if (android.os.Build.VERSION.SDK_INT >= 19) {
             this.bitsPerPixelOfCache = BMP_BPP_ARGB_8888;
         }
@@ -40,7 +45,7 @@ public class CachingPolicy {
     /**
      * 缓存bitmap的格式, ARGB_4444 = 16  ARGB_8888 = 32
      * use BMP_BPP_ARGB_4444 or BMP_BPP_ARGB_8888
-     *
+     * <p>
      * Note: as of {@link android.os.Build.VERSION_CODES#KITKAT},
      * any bitmap created with this configuration will be created
      * using {@link #ARGB_8888} instead.
@@ -75,5 +80,21 @@ public class CachingPolicy {
     public int maxTimesOfStrictReusableFinds = 20;
 
     public int maxTimesOfReusableFinds = 150;
+
+    /**
+     * 是否开启了弹幕缓存模式
+     */
+    public boolean mCacheDrawEnabled = false;
+    /**
+     * 是否允许弹幕在使用缓存的状态下延迟显示
+     * 对于使用缓存的弹幕，直接绘制弹幕缓存的速度比绘制弹幕速度快得多
+     * 在某些极端的情况下(弹幕密度大或则预留创建缓存的时间短)，弹幕缓存无法及时提供，所以此标识表明是否允许在没有
+     * 准备好弹幕缓存的情况下延迟弹幕显示，直到弹幕缓存创建好。
+     * 该变量在绘制{@link AndroidDisplayer}和
+     * {@link master.flame.danmaku.controller.CacheManagingDrawTask}中使用到
+     * 默认不延迟。
+     * 该值只有在{@link #mCacheDrawEnabled}状态为true才有效
+     */
+    public boolean mAllowDelayInCacheModel = false;
 
 }

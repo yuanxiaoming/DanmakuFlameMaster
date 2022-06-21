@@ -299,7 +299,7 @@ public class DanmakuTextureView extends TextureView implements IDanmakuView, IDa
                     if (mDrawTimes == null) {
                         mDrawTimes = new LinkedList<Long>();
                     }
-                    dtime = SystemClock.uptimeMillis() - stime;
+                   // dtime = SystemClock.uptimeMillis() - stime;
                     String fps = String.format(Locale.getDefault(),
                             "fps %.2f,time:%d s,cache:%d,miss:%d", fps(), getCurrentTime() / 1000,
                             rs.cacheHitCount, rs.cacheMissCount);

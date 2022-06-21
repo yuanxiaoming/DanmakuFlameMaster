@@ -28,4 +28,5 @@ public abstract class AbsDisplayer<T, F> implements IDisplayer {
     public abstract void setCacheStuffer(BaseCacheStuffer cacheStuffer);
 
     public abstract BaseCacheStuffer getCacheStuffer();
+
 }

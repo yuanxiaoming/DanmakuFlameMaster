@@ -308,7 +308,7 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
         overlappingEnablePair.put(BaseDanmaku.TYPE_FIX_TOP, true);
 
         mDanmakuView = (IDanmakuView) findViewById(R.id.sv_danmaku);
-        mContext = DanmakuContext.create();
+        mContext = DanmakuContext.create(mDanmakuView);
 
         mIconWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, getResources().getDisplayMetrics());
         mContext.setDanmakuBold(true);
@@ -394,7 +394,7 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
 
                 @Override
                 public void danmakuShown(BaseDanmaku danmaku) {
-//                    Log.d("DFM", "danmakuShown(): text=" + danmaku.text);
+                    Log.d("DFM", "danmakuShown(): text=" + danmaku.text);
                 }
 
                 @Override

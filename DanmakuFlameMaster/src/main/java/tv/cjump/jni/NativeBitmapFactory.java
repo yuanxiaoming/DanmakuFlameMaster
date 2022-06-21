@@ -154,7 +154,7 @@ public class NativeBitmapFactory {
     public static synchronized Bitmap createBitmap(int width, int height, Bitmap.Config config,
                                                    boolean hasAlpha) {
         if (!nativeLibLoaded || nativeIntField == null) {
-            // Log.e("NativeBitmapFactory", "ndk bitmap create failed");
+            // DanmakuLoggers.e("NativeBitmapFactory", "ndk bitmap create failed");
             return Bitmap.createBitmap(width, height, config);
         }
         return createNativeBitmap(width, height, config, hasAlpha);

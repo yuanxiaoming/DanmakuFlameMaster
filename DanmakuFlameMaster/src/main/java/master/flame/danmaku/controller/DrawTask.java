@@ -35,18 +35,18 @@ import master.flame.danmaku.danmaku.util.SystemClock;
 public class DrawTask implements IDrawTask {
 
     protected final DanmakuContext mContext;
-    
+
     protected final AbsDisplayer mDisp;
 
     protected IDanmakus danmakuList;
 
     protected BaseDanmakuParser mParser;
 
-    TaskListener mTaskListener;
+    protected TaskListener mTaskListener;
 
-    final IRenderer mRenderer;
+    protected final IRenderer mRenderer;
 
-    DanmakuTimer mTimer;
+    protected DanmakuTimer mTimer;
 
     private IDanmakus danmakus = new Danmakus(Danmakus.ST_BY_LIST);
 
@@ -76,13 +76,14 @@ public class DrawTask implements IDrawTask {
 
     private ConfigChangedCallback mConfigChangedCallback = new ConfigChangedCallback() {
         @Override
-        public boolean onDanmakuConfigChanged(DanmakuContext config, DanmakuConfigTag tag, Object... values) {
+        public boolean onDanmakuConfigChanged(DanmakuContext config, DanmakuConfigTag tag,
+                                              Object... values) {
             return DrawTask.this.onDanmakuConfigChanged(config, tag, values);
         }
     };
 
     public DrawTask(DanmakuTimer timer, DanmakuContext context,
-            TaskListener taskListener) {
+                    TaskListener taskListener) {
         if (context == null) {
             throw new IllegalArgumentException("context is null");
         }
@@ -99,11 +100,12 @@ public class DrawTask implements IDrawTask {
                 }
             }
         });
-        mRenderer.setVerifierEnabled(mContext.isPreventOverlappingEnabled() || mContext.isMaxLinesLimited());
+        mRenderer.setVerifierEnabled(
+                mContext.isPreventOverlappingEnabled() || mContext.isMaxLinesLimited());
         initTimer(timer);
         Boolean enable = mContext.isDuplicateMergingEnabled();
         if (enable != null) {
-            if(enable) {
+            if (enable) {
                 mContext.mDanmakuFilters.registerFilter(DanmakuFilters.TAG_DUPLICATE_FILTER);
             } else {
                 mContext.mDanmakuFilters.unregisterFilter(DanmakuFilters.TAG_DUPLICATE_FILTER);
@@ -117,8 +119,9 @@ public class DrawTask implements IDrawTask {
 
     @Override
     public synchronized void addDanmaku(BaseDanmaku item) {
-        if (danmakuList == null)
+        if (danmakuList == null) {
             return;
+        }
         if (item.isLive) {
             mLiveDanmakus.addItem(item);
             removeUnusedLiveDanmakusIn(10);
@@ -142,7 +145,8 @@ public class DrawTask implements IDrawTask {
         if (added && mTaskListener != null) {
             mTaskListener.onDanmakuAdd(item);
         }
-        if (mLastDanmaku == null || (item != null && mLastDanmaku != null && item.getActualTime() > mLastDanmaku.getActualTime())) {
+        if (mLastDanmaku == null || (item != null && mLastDanmaku != null &&
+                item.getActualTime() > mLastDanmaku.getActualTime())) {
             mLastDanmaku = item;
         }
     }
@@ -161,15 +165,20 @@ public class DrawTask implements IDrawTask {
 
     @Override
     public synchronized void removeAllDanmakus(boolean isClearDanmakusOnScreen) {
-        if (danmakuList == null || danmakuList.isEmpty())
+        if (danmakuList == null || danmakuList.isEmpty()) {
             return;
+        }
         synchronized (danmakuList) {
             if (!isClearDanmakusOnScreen) {
-                long beginMills = mTimer.currMillisecond - mContext.mDanmakuFactory.MAX_DANMAKU_DURATION - 100;
-                long endMills = mTimer.currMillisecond + mContext.mDanmakuFactory.MAX_DANMAKU_DURATION;
+                long beginMills =
+                        mTimer.currMillisecond - mContext.mDanmakuFactory.MAX_DANMAKU_DURATION -
+                                100;
+                long endMills =
+                        mTimer.currMillisecond + mContext.mDanmakuFactory.MAX_DANMAKU_DURATION;
                 IDanmakus tempDanmakus = danmakuList.subnew(beginMills, endMills);
-                if (tempDanmakus != null)
+                if (tempDanmakus != null) {
                     danmakus = tempDanmakus;
+                }
             }
             danmakuList.clear();
         }
@@ -181,8 +190,9 @@ public class DrawTask implements IDrawTask {
 
     @Override
     public synchronized void removeAllLiveDanmakus() {
-        if (danmakus == null || danmakus.isEmpty())
+        if (danmakus == null || danmakus.isEmpty()) {
             return;
+        }
         synchronized (danmakus) {
             danmakus.forEachSync(new IDanmakus.DefaultConsumer<BaseDanmaku>() {
                 @Override
@@ -198,8 +208,9 @@ public class DrawTask implements IDrawTask {
     }
 
     protected synchronized void removeUnusedLiveDanmakusIn(final int msec) {
-        if (danmakuList == null || danmakuList.isEmpty() || mLiveDanmakus.isEmpty())
+        if (danmakuList == null || danmakuList.isEmpty() || mLiveDanmakus.isEmpty()) {
             return;
+        }
         mLiveDanmakus.forEachSync(new IDanmakus.DefaultConsumer<BaseDanmaku>() {
             long startTime = SystemClock.uptimeMillis();
 
@@ -253,15 +264,17 @@ public class DrawTask implements IDrawTask {
 
     @Override
     public synchronized RenderingState draw(AbsDisplayer displayer) {
-        return drawDanmakus(displayer,mTimer);
+        return drawDanmakus(displayer, mTimer);
     }
 
     @Override
     public void reset() {
-        if (danmakus != null)
+        if (danmakus != null) {
             danmakus = new Danmakus();
-        if (mRenderer != null)
+        }
+        if (mRenderer != null) {
             mRenderer.clear();
+        }
     }
 
     @Override
@@ -301,8 +314,9 @@ public class DrawTask implements IDrawTask {
     @Override
     public void quit() {
         mContext.unregisterAllConfigChangedCallbacks();
-        if (mRenderer != null)
+        if (mRenderer != null) {
             mRenderer.release();
+        }
     }
 
     public void prepare() {
@@ -323,16 +337,17 @@ public class DrawTask implements IDrawTask {
     }
 
     protected void loadDanmakus(BaseDanmakuParser parser) {
-        danmakuList = parser.setConfig(mContext).setDisplayer(mDisp).setTimer(mTimer).setListener(new BaseDanmakuParser.Listener() {
-            @Override
-            public void onDanmakuAdd(BaseDanmaku danmaku) {
-                if (mTaskListener != null) {
-                    mTaskListener.onDanmakuAdd(danmaku);
-                }
-            }
-        }).getDanmakus();
+        danmakuList = parser.setConfig(mContext).setDisplayer(mDisp).setTimer(mTimer)
+                .setListener(new BaseDanmakuParser.Listener() {
+                    @Override
+                    public void onDanmakuAdd(BaseDanmaku danmaku) {
+                        if (mTaskListener != null) {
+                            mTaskListener.onDanmakuAdd(danmaku);
+                        }
+                    }
+                }).getDanmakus();
         mContext.mGlobalFlagValues.resetAll();
-        if(danmakuList != null) {
+        if (danmakuList != null) {
             mLastDanmaku = danmakuList.last();
         }
     }
@@ -357,10 +372,11 @@ public class DrawTask implements IDrawTask {
             mRequestRender = false;
             RenderingState renderingState = mRenderingState;
             // prepare screenDanmakus
-            long beginMills = timer.currMillisecond - mContext.mDanmakuFactory.MAX_DANMAKU_DURATION - 100;
+            long beginMills =
+                    timer.currMillisecond - mContext.mDanmakuFactory.MAX_DANMAKU_DURATION - 100;
             long endMills = timer.currMillisecond + mContext.mDanmakuFactory.MAX_DANMAKU_DURATION;
             IDanmakus screenDanmakus = danmakus;
-            if(mLastBeginMills > beginMills || timer.currMillisecond > mLastEndMills) {
+            if (mLastBeginMills > beginMills || timer.currMillisecond > mLastEndMills) {
                 screenDanmakus = danmakuList.sub(beginMills, endMills);
                 if (screenDanmakus != null) {
                     danmakus = screenDanmakus;
@@ -386,7 +402,7 @@ public class DrawTask implements IDrawTask {
                 mRenderer.draw(mDisp, screenDanmakus, mStartRenderTime, renderingState);
                 endTracing(renderingState);
                 if (renderingState.nothingRendered) {
-                    if(mLastDanmaku != null && mLastDanmaku.isTimeOut()) {
+                    if (mLastDanmaku != null && mLastDanmaku.isTimeOut()) {
                         mLastDanmaku = null;
                         if (mTaskListener != null) {
                             mTaskListener.onDanmakusDrawingFinished();
@@ -444,7 +460,7 @@ public class DrawTask implements IDrawTask {
     }
 
     public boolean onDanmakuConfigChanged(DanmakuContext config, DanmakuConfigTag tag,
-            Object... values) {
+                                          Object... values) {
         boolean handled = handleOnDanmakuConfigChanged(config, tag, values);
         if (mTaskListener != null) {
             mTaskListener.onDanmakuConfigChanged();
@@ -452,7 +468,8 @@ public class DrawTask implements IDrawTask {
         return handled;
     }
 
-    protected boolean handleOnDanmakuConfigChanged(DanmakuContext config, DanmakuConfigTag tag, Object[] values) {
+    protected boolean handleOnDanmakuConfigChanged(DanmakuContext config, DanmakuConfigTag tag,
+                                                   Object[] values) {
         boolean handled = false;
         if (tag == null || DanmakuConfigTag.MAXIMUM_NUMS_IN_SCREEN.equals(tag)) {
             handled = true;
@@ -466,12 +483,16 @@ public class DrawTask implements IDrawTask {
                 }
                 handled = true;
             }
-        } else if (DanmakuConfigTag.SCALE_TEXTSIZE.equals(tag) || DanmakuConfigTag.SCROLL_SPEED_FACTOR.equals(tag) || DanmakuConfigTag.DANMAKU_MARGIN.equals(tag)) {
+        } else if (DanmakuConfigTag.SCALE_TEXTSIZE.equals(tag) ||
+                DanmakuConfigTag.SCROLL_SPEED_FACTOR.equals(tag) ||
+                DanmakuConfigTag.DANMAKU_MARGIN.equals(tag)) {
             requestClearRetainer();
             handled = false;
-        } else if (DanmakuConfigTag.MAXIMUN_LINES.equals(tag) || DanmakuConfigTag.OVERLAPPING_ENABLE.equals(tag)) {
+        } else if (DanmakuConfigTag.MAXIMUN_LINES.equals(tag) ||
+                DanmakuConfigTag.OVERLAPPING_ENABLE.equals(tag)) {
             if (mRenderer != null) {
-                mRenderer.setVerifierEnabled(mContext.isPreventOverlappingEnabled() || mContext.isMaxLinesLimited());
+                mRenderer.setVerifierEnabled(
+                        mContext.isPreventOverlappingEnabled() || mContext.isMaxLinesLimited());
             }
             handled = true;
         } else if (DanmakuConfigTag.ALIGN_BOTTOM.equals(tag)) {
@@ -496,11 +517,13 @@ public class DrawTask implements IDrawTask {
         this.mRequestRender = true;
     }
 
-    private void beginTracing(RenderingState renderingState, IDanmakus runningDanmakus, IDanmakus screenDanmakus) {
+    private void beginTracing(RenderingState renderingState, IDanmakus runningDanmakus,
+                              IDanmakus screenDanmakus) {
         renderingState.reset();
         renderingState.timer.update(SystemClock.uptimeMillis());
         renderingState.indexInScreen = 0;
-        renderingState.totalSizeInScreen = (runningDanmakus != null ? runningDanmakus.size() : 0) + (screenDanmakus != null ? screenDanmakus.size() : 0);
+        renderingState.totalSizeInScreen = (runningDanmakus != null ? runningDanmakus.size() : 0) +
+                (screenDanmakus != null ? screenDanmakus.size() : 0);
     }
 
     private void endTracing(RenderingState renderingState) {
@@ -510,7 +533,8 @@ public class DrawTask implements IDrawTask {
         }
         BaseDanmaku lastDanmaku = renderingState.lastDanmaku;
         renderingState.lastDanmaku = null;
-        renderingState.endTime = lastDanmaku != null ? lastDanmaku.getActualTime() : RenderingState.UNKNOWN_TIME;
+        renderingState.endTime =
+                lastDanmaku != null ? lastDanmaku.getActualTime() : RenderingState.UNKNOWN_TIME;
         renderingState.consumingTime = renderingState.timer.update(SystemClock.uptimeMillis());
     }
 }

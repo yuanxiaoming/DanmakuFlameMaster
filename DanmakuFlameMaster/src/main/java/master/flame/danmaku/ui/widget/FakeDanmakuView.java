@@ -262,7 +262,7 @@ public class FakeDanmakuView extends DanmakuView implements DrawHandler.Callback
         DanmakuContext configCopy;
         try {
             configCopy = (DanmakuContext) config.clone();
-            configCopy.resetContext();
+            configCopy.resetContext(this);
             configCopy.transparency = AlphaValue.MAX;
             configCopy.setDanmakuTransparency(config.transparency / (float) AlphaValue.MAX);
             configCopy.mGlobalFlagValues.FILTER_RESET_FLAG = config.mGlobalFlagValues.FILTER_RESET_FLAG;

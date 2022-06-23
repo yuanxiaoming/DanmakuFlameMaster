@@ -51,6 +51,7 @@ import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
 import master.flame.danmaku.danmaku.parser.IDataSource;
 import master.flame.danmaku.danmaku.util.IOUtils;
 import master.flame.danmaku.danmaku.util.SystemClock;
+import master.flame.danmaku.extensions.CustomCacheStuffer;
 import master.flame.danmaku.ui.widget.DanmakuTextureView;
 
 public class MainActivity extends Activity implements View.OnClickListener {
@@ -76,7 +77,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Button mBtnSendDanmakuTextAndImage;
 
     private Button mBtnSendDanmakus;
-    private DanmakuContext mContext;
+
+    private DanmakuContext mDanmakuContext;
+
     private BaseCacheStuffer.Proxy mCacheStufferAdapter = new BaseCacheStuffer.Proxy() {
 
         private Drawable mDrawable;
@@ -203,7 +206,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     private void findViews() {
-
         mMediaController = findViewById(R.id.media_controller);
         mBtnRotate = (Button) findViewById(R.id.rotate);
         mBtnHideDanmaku = (Button) findViewById(R.id.btn_hide);
@@ -242,12 +244,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
         overlappingEnablePair.put(BaseDanmaku.TYPE_FIX_TOP, true);
 
         mDanmakuView = (IDanmakuView) findViewById(R.id.sv_danmaku);
-        mContext = DanmakuContext.create(mDanmakuView);
-        mContext.setDanmakuStyle(IDisplayer.DANMAKU_STYLE_STROKEN, 3)
+        mDanmakuContext = DanmakuContext.create(mDanmakuView);
+        mDanmakuContext.setDanmakuStyle(IDisplayer.DANMAKU_STYLE_STROKEN, 3)
                 .setDuplicateMergingEnabled(false).setScrollSpeedFactor(1.2f).setScaleTextSize(1.2f)
-                .setCacheStuffer(new SpannedCacheStuffer(),
-                        mCacheStufferAdapter) // 图文混排使用SpannedCacheStuffer
-//        .setCacheStuffer(new BackgroundCacheStuffer())  // 绘制背景使用BackgroundCacheStuffer
+                .setCacheStuffer(new CustomCacheStuffer(getApplicationContext(), mDanmakuView),
+                        mCacheStufferAdapter)
+                // 图文混排使用SpannedCacheStuffer
+                //.setCacheStuffer(new BackgroundCacheStuffer())
+                // 绘制背景使用BackgroundCacheStuffer
                 .setMaximumLines(maxLinesPair)
                 .setAllowDelayInCacheModel(true)
                 .preventOverlapping(overlappingEnablePair).setDanmakuMargin(40);
@@ -279,8 +283,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 public void prepared() {
                     Log.d("DFM", "prepared");
                     mDanmakuView.start();
-                     mDanmakuView.resume();
-                    // mDanmakuView.show();
                 }
             });
             mDanmakuView.setOnDanmakuClickListener(new IDanmakuView.OnDanmakuClickListener() {
@@ -311,9 +313,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     return false;
                 }
             });
-            mDanmakuView.prepare(mParser, mContext);
+            mDanmakuView.prepare(mParser, mDanmakuContext);
             mDanmakuView.showFPS(true);
-            mDanmakuView.enableDanmakuDrawingCache(true);
         }
 
         if (mVideoView != null) {
@@ -340,8 +341,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onResume() {
         super.onResume();
-         if (mDanmakuView != null && mDanmakuView.isPrepared() && mDanmakuView.isPaused()) {
-             Log.d("DFM", "resume");
+        if (mDanmakuView != null && mDanmakuView.isPrepared() && mDanmakuView.isPaused()) {
+            Log.d("DFM", "resume");
             mDanmakuView.resume();
         }
     }
@@ -430,7 +431,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     ;
 
     private void addDanmaku(boolean islive) {
-        BaseDanmaku danmaku = mContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL);
+        BaseDanmaku danmaku =
+                mDanmakuContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL);
         if (danmaku == null || mDanmakuView == null) {
             return;
         }
@@ -452,7 +454,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void addDanmaKuShowTextAndImage(boolean islive) {
         BaseDanmaku danmaku =
-                mContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL);
+                mDanmakuContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL);
         Drawable drawable = getResources().getDrawable(R.drawable.ic_launcher);
         drawable.setBounds(0, 0, 100, 100);
         SpannableStringBuilder spannable = createSpannable(drawable);

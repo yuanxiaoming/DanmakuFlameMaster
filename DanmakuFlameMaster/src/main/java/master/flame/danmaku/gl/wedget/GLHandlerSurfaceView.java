@@ -1,4 +1,3 @@
-
 package master.flame.danmaku.gl.wedget;
 
 import android.content.Context;
@@ -30,39 +29,34 @@ import javax.microedition.khronos.opengles.GL10;
 import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 import master.flame.danmaku.gl.GLConstants;
 
-public class GLHandlerSurfaceView extends SurfaceView
+public abstract class GLHandlerSurfaceView extends SurfaceView
         implements SurfaceHolder.Callback2, GLShareable {
-    private final static String TAG = "GLHandlerSurfaceView";
-    public int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
-    private final static long NORMAL_WAIT_TIME = 20;
-    private final static boolean DEBUG = GLConstants.DEBUG_GLHANDLERSURFACEVIEW;
-    private final static boolean LOG_ATTACH_DETACH = false;
-    private final static boolean LOG_THREADS = false;
-    private final static boolean LOG_PAUSE_RESUME = false;
-    private final static boolean LOG_SURFACE = false;
-    private final static boolean LOG_RENDERER = false;
-    private final static boolean LOG_RENDERER_DRAW_FRAME = false;
-    private final static boolean LOG_EGL = false;
-
     public final static int RENDERMODE_WHEN_DIRTY = 0;
     public final static int RENDERMODE_CONTINUOUSLY = 1;
     public final static int DEFAULT_RENDERMODE = RENDERMODE_CONTINUOUSLY;
-
     public final static int DEBUG_CHECK_GL_ERROR = 1;
     public final static int DEBUG_LOG_GL_CALLS = 2;
-
+    private final static String TAG = "GLHandlerSurfaceView";
+    private final static long NORMAL_WAIT_TIME = 20;
+    private final static boolean DEBUG = GLConstants.DEBUG_GLHANDLERSURFACEVIEW;
+    private final static boolean LOG_ATTACH_DETACH = GLConstants.LOG_ATTACH_DETACH;
+    private final static boolean LOG_THREADS = GLConstants.LOG_ATTACH_DETACH;
+    private final static boolean LOG_PAUSE_RESUME = GLConstants.LOG_PAUSE_RESUME;
+    private final static boolean LOG_SURFACE = GLConstants.LOG_SURFACE;
+    private final static boolean LOG_RENDERER = GLConstants.LOG_RENDERER;
+    private final static boolean LOG_RENDERER_DRAW_FRAME = GLConstants.LOG_RENDERER_DRAW_FRAME;
+    private final static boolean LOG_EGL = GLConstants.LOG_EGL;
     private static final int MSG_RUN = 1;
     private static final int MSG_SCHEDULE = 2;
     private final Object mMonitor = new Object();
-
+    private final WeakReference<GLHandlerSurfaceView> mThisWeakRef =
+            new WeakReference<>(this);
+    public int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
     private GLHandler mHandler;
     private Looper mWorkLooper;
     private HandlerThread mHandlerThread;
     private int mThreadPriority = Thread.NORM_PRIORITY;
     private boolean mAllowMainThreadLooper = false;
-
-    private final WeakReference<GLHandlerSurfaceView> mThisWeakRef =
-            new WeakReference<>(this);
     private boolean mDetached;
     private Renderer mRenderer;
     private EGLConfigChooser mEGLConfigChooser;
@@ -122,37 +116,37 @@ public class GLHandlerSurfaceView extends SurfaceView
         mGLWrapper = glWrapper;
     }
 
-    public void setDebugFlags(int debugFlags) {
-        mDebugFlags = debugFlags;
-    }
-
     public int getDebugFlags() {
         return mDebugFlags;
     }
 
-    public void setPreserveEGLContextOnPause(boolean preserveOnPause) {
-        mPreserveEGLContextOnPause = preserveOnPause;
+    public void setDebugFlags(int debugFlags) {
+        mDebugFlags = debugFlags;
     }
 
     public boolean getPreserveEGLContextOnPause() {
         return mPreserveEGLContextOnPause;
     }
 
-    public void setAllowMainThreadLooper(boolean allow) {
-        this.mAllowMainThreadLooper = allow;
+    public void setPreserveEGLContextOnPause(boolean preserveOnPause) {
+        mPreserveEGLContextOnPause = preserveOnPause;
     }
 
     public boolean isAllowMainThreadLooper() {
         return this.mAllowMainThreadLooper;
     }
 
-    public void setThreadPriority(int priority) {
-        checkRenderThreadState();
-        this.mThreadPriority = priority;
+    public void setAllowMainThreadLooper(boolean allow) {
+        this.mAllowMainThreadLooper = allow;
     }
 
     public int getThreadPriority() {
         return this.mThreadPriority;
+    }
+
+    public void setThreadPriority(int priority) {
+        checkRenderThreadState();
+        this.mThreadPriority = priority;
     }
 
     public void setRenderer(Renderer renderer) {
@@ -212,9 +206,12 @@ public class GLHandlerSurfaceView extends SurfaceView
                 blueSize, alphaSize, depthSize, stencilSize));
     }
 
-    public void setEGLContextClientVersion(int version) {
-        checkRenderThreadState();
-        mEGLContextClientVersion = version;
+    public int getRenderMode() {
+        if (mHandler == null) {
+            DanmakuLoggers.w(TAG, "did you have called the setRenderer before call getRenderMode");
+            return DEFAULT_RENDERMODE;
+        }
+        return mHandler.getRenderMode();
     }
 
     public void setRenderMode(int renderMode) {
@@ -226,14 +223,6 @@ public class GLHandlerSurfaceView extends SurfaceView
             DanmakuLoggers.i(TAG, "setRenderMode renderMode = " + renderMode);
         }
         mHandler.setRenderMode(renderMode);
-    }
-
-    public int getRenderMode() {
-        if (mHandler == null) {
-            DanmakuLoggers.w(TAG, "did you have called the setRenderer before call getRenderMode");
-            return DEFAULT_RENDERMODE;
-        }
-        return mHandler.getRenderMode();
     }
 
     public void requestRender() {
@@ -388,6 +377,11 @@ public class GLHandlerSurfaceView extends SurfaceView
         return mEGLContextClientVersion;
     }
 
+    public void setEGLContextClientVersion(int version) {
+        checkRenderThreadState();
+        mEGLContextClientVersion = version;
+    }
+
     @Override
     public int getSurfaceWidth() {
         return getWidth();
@@ -400,10 +394,51 @@ public class GLHandlerSurfaceView extends SurfaceView
 
     //==================================inner classes or ininterfaces==========================================================
 
+    public interface GLWrapper {
+        GL wrap(GL gl);
+    }
+
+    public interface Renderer {
+        void onSurfaceCreated(GL10 gl, EGLConfig config);
+
+        void onSurfaceChanged(GL10 gl, int width, int height);
+
+        void onDrawFrame(GL10 gl);
+    }
+
+    public interface EGLContextFactory {
+        EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig);
+
+        void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context);
+    }
+
+    public interface EGLWindowSurfaceFactory {
+
+        EGLSurface createWindowSurface(EGL10 egl, EGLDisplay display, EGLConfig config,
+                                       Object nativeWindow);
+
+        void destroySurface(EGL10 egl, EGLDisplay display, EGLSurface surface);
+    }
+
+    public interface EGLConfigChooser {
+        EGLConfig chooseConfig(EGL10 egl, EGLDisplay display);
+    }
+
     static class GLHandler extends Handler {
         WeakReference<GLHandlerSurfaceView> mWeakReference;
-        private EglHelper mEglHelper;
-
+        GL10 gl = null;
+        boolean createEglContext = false;
+        boolean createEglSurface = false;
+        boolean createGlInterface = false;
+        boolean lostEglContext = false;
+        boolean sizeChanged = false;
+        boolean wantRenderNotification = false;
+        boolean doRenderNotification = false;
+        boolean askedToReleaseEglContext = false;
+        int w = 0;
+        int h = 0;
+        Runnable finishDrawingRunnable = null;
+        private final EglHelper mEglHelper;
         private boolean mShouldExit;
         private boolean mExited;
         private boolean mRequestPaused;
@@ -421,23 +456,9 @@ public class GLHandlerSurfaceView extends SurfaceView
         private boolean mRequestRender;
         private boolean mWantRenderNotification;
         private boolean mRenderComplete;
-        private ArrayList<Runnable> mEventQueue = new ArrayList<Runnable>();
+        private final ArrayList<Runnable> mEventQueue = new ArrayList<Runnable>();
         private boolean mSizeChanged = true;
         private Runnable mFinishDrawingRunnable = null;
-
-        GL10 gl = null;
-        boolean createEglContext = false;
-        boolean createEglSurface = false;
-        boolean createGlInterface = false;
-        boolean lostEglContext = false;
-        boolean sizeChanged = false;
-        boolean wantRenderNotification = false;
-        boolean doRenderNotification = false;
-        boolean askedToReleaseEglContext = false;
-        int w = 0;
-        int h = 0;
-        Runnable finishDrawingRunnable = null;
-
         private long mLastRun = 0;
 
         GLHandler(Looper looper, WeakReference<GLHandlerSurfaceView> glSurfaceViewWeakRef) {
@@ -804,6 +825,13 @@ public class GLHandlerSurfaceView extends SurfaceView
                     && (mRequestRender || (mRenderMode == RENDERMODE_CONTINUOUSLY));
         }
 
+        public int getRenderMode() {
+            GLHandlerSurfaceView glHandlerSurfaceView = mWeakReference.get();
+            synchronized (glHandlerSurfaceView.mMonitor) {
+                return mRenderMode;
+            }
+        }
+
         public void setRenderMode(int renderMode) {
             if (!((RENDERMODE_WHEN_DIRTY <= renderMode) &&
                     (renderMode <= RENDERMODE_CONTINUOUSLY))) {
@@ -818,13 +846,6 @@ public class GLHandlerSurfaceView extends SurfaceView
                 } else {
                     obtainMessage(MSG_RUN).sendToTarget();
                 }
-            }
-        }
-
-        public int getRenderMode() {
-            GLHandlerSurfaceView glHandlerSurfaceView = mWeakReference.get();
-            synchronized (glHandlerSurfaceView.mMonitor) {
-                return mRenderMode;
             }
         }
 
@@ -1039,56 +1060,6 @@ public class GLHandlerSurfaceView extends SurfaceView
         }
     }
 
-    public interface GLWrapper {
-        GL wrap(GL gl);
-    }
-
-    public interface Renderer {
-        void onSurfaceCreated(GL10 gl, EGLConfig config);
-
-        void onSurfaceChanged(GL10 gl, int width, int height);
-
-        void onDrawFrame(GL10 gl);
-    }
-
-    public interface EGLContextFactory {
-        EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig);
-
-        void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context);
-    }
-
-    private class DefaultContextFactory implements EGLContextFactory {
-
-        public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig config) {
-            int[] attrib_list = {EGL_CONTEXT_CLIENT_VERSION, mEGLContextClientVersion,
-                    EGL10.EGL_NONE};
-
-            return egl.eglCreateContext(display, config, EGL10.EGL_NO_CONTEXT,
-                    mEGLContextClientVersion != 0 ? attrib_list : null);
-        }
-
-        public void destroyContext(EGL10 egl, EGLDisplay display,
-                                   EGLContext context) {
-            if (!egl.eglDestroyContext(display, context)) {
-                DanmakuLoggers
-                        .e("DefaultContextFactory", "display:" + display + " context: " + context);
-                if (LOG_THREADS) {
-                    DanmakuLoggers
-                            .i("DefaultContextFactory", "tid=" + Thread.currentThread().getId());
-                }
-                EglHelper.throwEglException("eglDestroyContex", egl.eglGetError());
-            }
-        }
-    }
-
-    public interface EGLWindowSurfaceFactory {
-
-        EGLSurface createWindowSurface(EGL10 egl, EGLDisplay display, EGLConfig config,
-                                       Object nativeWindow);
-
-        void destroySurface(EGL10 egl, EGLDisplay display, EGLSurface surface);
-    }
-
     private static class DefaultWindowSurfaceFactory implements EGLWindowSurfaceFactory {
 
         public EGLSurface createWindowSurface(EGL10 egl, EGLDisplay display,
@@ -1108,145 +1079,34 @@ public class GLHandlerSurfaceView extends SurfaceView
         }
     }
 
-    public interface EGLConfigChooser {
-        EGLConfig chooseConfig(EGL10 egl, EGLDisplay display);
-    }
-
-    private abstract class BaseConfigChooser
-            implements EGLConfigChooser {
-        public BaseConfigChooser(int[] configSpec) {
-            mConfigSpec = filterConfigSpec(configSpec);
-        }
-
-        public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
-            int[] num_config = new int[1];
-            if (!egl.eglChooseConfig(display, mConfigSpec, null, 0,
-                    num_config)) {
-                throw new IllegalArgumentException("eglChooseConfig failed");
-            }
-
-            int numConfigs = num_config[0];
-
-            if (numConfigs <= 0) {
-                throw new IllegalArgumentException(
-                        "No configs match configSpec");
-            }
-
-            EGLConfig[] configs = new EGLConfig[numConfigs];
-            if (!egl.eglChooseConfig(display, mConfigSpec, configs, numConfigs,
-                    num_config)) {
-                throw new IllegalArgumentException("eglChooseConfig#2 failed");
-            }
-            EGLConfig config = chooseConfig(egl, display, configs);
-            if (config == null) {
-                throw new IllegalArgumentException("No config chosen");
-            }
-            return config;
-        }
-
-        abstract EGLConfig chooseConfig(EGL10 egl, EGLDisplay display,
-                                        EGLConfig[] configs);
-
-        protected int[] mConfigSpec;
-
-        private int[] filterConfigSpec(int[] configSpec) {
-            if (mEGLContextClientVersion != 2 && mEGLContextClientVersion != 3) {
-                return configSpec;
-            }
-            int len = configSpec.length;
-            int[] newConfigSpec = new int[len + 2];
-            System.arraycopy(configSpec, 0, newConfigSpec, 0, len - 1);
-            newConfigSpec[len - 1] = EGL10.EGL_RENDERABLE_TYPE;
-            if (mEGLContextClientVersion == 2) {
-                newConfigSpec[len] = EGL14.EGL_OPENGL_ES2_BIT;  /* EGL_OPENGL_ES2_BIT */
-            } else {
-                newConfigSpec[len] = EGLExt.EGL_OPENGL_ES3_BIT_KHR; /* EGL_OPENGL_ES3_BIT_KHR */
-            }
-            newConfigSpec[len + 1] = EGL10.EGL_NONE;
-            return newConfigSpec;
-        }
-    }
-
-    private class ComponentSizeChooser extends BaseConfigChooser {
-        public ComponentSizeChooser(int redSize, int greenSize, int blueSize,
-                                    int alphaSize, int depthSize, int stencilSize) {
-            super(new int[]{
-                    EGL10.EGL_RED_SIZE, redSize,
-                    EGL10.EGL_GREEN_SIZE, greenSize,
-                    EGL10.EGL_BLUE_SIZE, blueSize,
-                    EGL10.EGL_ALPHA_SIZE, alphaSize,
-                    EGL10.EGL_DEPTH_SIZE, depthSize,
-                    EGL10.EGL_STENCIL_SIZE, stencilSize,
-                    EGL10.EGL_NONE});
-            mValue = new int[1];
-            mRedSize = redSize;
-            mGreenSize = greenSize;
-            mBlueSize = blueSize;
-            mAlphaSize = alphaSize;
-            mDepthSize = depthSize;
-            mStencilSize = stencilSize;
-        }
-
-        @Override
-        public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display,
-                                      EGLConfig[] configs) {
-            for (EGLConfig config : configs) {
-                int d = findConfigAttrib(egl, display, config,
-                        EGL10.EGL_DEPTH_SIZE, 0);
-                int s = findConfigAttrib(egl, display, config,
-                        EGL10.EGL_STENCIL_SIZE, 0);
-                if ((d >= mDepthSize) && (s >= mStencilSize)) {
-                    int r = findConfigAttrib(egl, display, config,
-                            EGL10.EGL_RED_SIZE, 0);
-                    int g = findConfigAttrib(egl, display, config,
-                            EGL10.EGL_GREEN_SIZE, 0);
-                    int b = findConfigAttrib(egl, display, config,
-                            EGL10.EGL_BLUE_SIZE, 0);
-                    int a = findConfigAttrib(egl, display, config,
-                            EGL10.EGL_ALPHA_SIZE, 0);
-                    if ((r == mRedSize) && (g == mGreenSize)
-                            && (b == mBlueSize) && (a == mAlphaSize)) {
-                        return config;
-                    }
-                }
-            }
-            return null;
-        }
-
-        private int findConfigAttrib(EGL10 egl, EGLDisplay display,
-                                     EGLConfig config, int attribute, int defaultValue) {
-
-            if (egl.eglGetConfigAttrib(display, config, attribute, mValue)) {
-                return mValue[0];
-            }
-            return defaultValue;
-        }
-
-        private int[] mValue;
-        protected int mRedSize;
-        protected int mGreenSize;
-        protected int mBlueSize;
-        protected int mAlphaSize;
-        protected int mDepthSize;
-        protected int mStencilSize;
-    }
-
-    private class SimpleEGLConfigChooser extends ComponentSizeChooser {
-        public SimpleEGLConfigChooser(boolean withDepthBuffer) {
-            super(8, 8, 8, 0, withDepthBuffer ? 16 : 0, 0);
-        }
-    }
-
     private static class EglHelper {
-        private WeakReference<GLHandlerSurfaceView> mGLSurfaceViewWeakRef;
         EGL10 mEgl;
         EGLDisplay mEglDisplay;
         EGLSurface mEglSurface;
         EGLConfig mEglConfig;
         EGLContext mEglContext;
+        private final WeakReference<GLHandlerSurfaceView> mGLSurfaceViewWeakRef;
 
         public EglHelper(WeakReference<GLHandlerSurfaceView> glSurfaceViewWeakRef) {
             mGLSurfaceViewWeakRef = glSurfaceViewWeakRef;
+        }
+
+        public static void throwEglException(String function, int error) {
+            String message = formatEglError(function, error);
+            if (LOG_THREADS) {
+                DanmakuLoggers.e("EglHelper",
+                        "throwEglException tid=" + Thread.currentThread().getId() + " "
+                                + message);
+            }
+            throw new RuntimeException(message);
+        }
+
+        public static void logEglErrorAsWarning(String tag, String function, int error) {
+            DanmakuLoggers.w(tag, formatEglError(function, error));
+        }
+
+        public static String formatEglError(String function, int error) {
+            return function + " failed: " + "0x" + Integer.toHexString(error);
         }
 
         public void start() {
@@ -1399,27 +1259,11 @@ public class GLHandlerSurfaceView extends SurfaceView
             throwEglException(function, mEgl.eglGetError());
         }
 
-        public static void throwEglException(String function, int error) {
-            String message = formatEglError(function, error);
-            if (LOG_THREADS) {
-                DanmakuLoggers.e("EglHelper",
-                        "throwEglException tid=" + Thread.currentThread().getId() + " "
-                                + message);
-            }
-            throw new RuntimeException(message);
-        }
-
-        public static void logEglErrorAsWarning(String tag, String function, int error) {
-            DanmakuLoggers.w(tag, formatEglError(function, error));
-        }
-
-        public static String formatEglError(String function, int error) {
-            return function + " failed: " + "0x" + Integer.toHexString(error);
-        }
-
     }
 
     static class LogWriter extends Writer {
+
+        private final StringBuilder mBuilder = new StringBuilder();
 
         @Override
         public void close() {
@@ -1449,7 +1293,153 @@ public class GLHandlerSurfaceView extends SurfaceView
                 mBuilder.delete(0, mBuilder.length());
             }
         }
+    }
 
-        private StringBuilder mBuilder = new StringBuilder();
+    private class DefaultContextFactory implements EGLContextFactory {
+
+        public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig config) {
+            int[] attrib_list = {EGL_CONTEXT_CLIENT_VERSION, mEGLContextClientVersion,
+                    EGL10.EGL_NONE};
+
+            return egl.eglCreateContext(display, config, EGL10.EGL_NO_CONTEXT,
+                    mEGLContextClientVersion != 0 ? attrib_list : null);
+        }
+
+        public void destroyContext(EGL10 egl, EGLDisplay display,
+                                   EGLContext context) {
+            if (!egl.eglDestroyContext(display, context)) {
+                DanmakuLoggers
+                        .e("DefaultContextFactory", "display:" + display + " context: " + context);
+                if (LOG_THREADS) {
+                    DanmakuLoggers
+                            .i("DefaultContextFactory", "tid=" + Thread.currentThread().getId());
+                }
+                EglHelper.throwEglException("eglDestroyContex", egl.eglGetError());
+            }
+        }
+    }
+
+    private abstract class BaseConfigChooser
+            implements EGLConfigChooser {
+        protected int[] mConfigSpec;
+
+        public BaseConfigChooser(int[] configSpec) {
+            mConfigSpec = filterConfigSpec(configSpec);
+        }
+
+        public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
+            int[] num_config = new int[1];
+            if (!egl.eglChooseConfig(display, mConfigSpec, null, 0,
+                    num_config)) {
+                throw new IllegalArgumentException("eglChooseConfig failed");
+            }
+
+            int numConfigs = num_config[0];
+
+            if (numConfigs <= 0) {
+                throw new IllegalArgumentException(
+                        "No configs match configSpec");
+            }
+
+            EGLConfig[] configs = new EGLConfig[numConfigs];
+            if (!egl.eglChooseConfig(display, mConfigSpec, configs, numConfigs,
+                    num_config)) {
+                throw new IllegalArgumentException("eglChooseConfig#2 failed");
+            }
+            EGLConfig config = chooseConfig(egl, display, configs);
+            if (config == null) {
+                throw new IllegalArgumentException("No config chosen");
+            }
+            return config;
+        }
+
+        abstract EGLConfig chooseConfig(EGL10 egl, EGLDisplay display,
+                                        EGLConfig[] configs);
+
+        private int[] filterConfigSpec(int[] configSpec) {
+            if (mEGLContextClientVersion != 2 && mEGLContextClientVersion != 3) {
+                return configSpec;
+            }
+            int len = configSpec.length;
+            int[] newConfigSpec = new int[len + 2];
+            System.arraycopy(configSpec, 0, newConfigSpec, 0, len - 1);
+            newConfigSpec[len - 1] = EGL10.EGL_RENDERABLE_TYPE;
+            if (mEGLContextClientVersion == 2) {
+                newConfigSpec[len] = EGL14.EGL_OPENGL_ES2_BIT;  /* EGL_OPENGL_ES2_BIT */
+            } else {
+                newConfigSpec[len] = EGLExt.EGL_OPENGL_ES3_BIT_KHR; /* EGL_OPENGL_ES3_BIT_KHR */
+            }
+            newConfigSpec[len + 1] = EGL10.EGL_NONE;
+            return newConfigSpec;
+        }
+    }
+
+    private class ComponentSizeChooser extends BaseConfigChooser {
+        protected int mRedSize;
+        protected int mGreenSize;
+        protected int mBlueSize;
+        protected int mAlphaSize;
+        protected int mDepthSize;
+        protected int mStencilSize;
+        private final int[] mValue;
+        public ComponentSizeChooser(int redSize, int greenSize, int blueSize,
+                                    int alphaSize, int depthSize, int stencilSize) {
+            super(new int[]{
+                    EGL10.EGL_RED_SIZE, redSize,
+                    EGL10.EGL_GREEN_SIZE, greenSize,
+                    EGL10.EGL_BLUE_SIZE, blueSize,
+                    EGL10.EGL_ALPHA_SIZE, alphaSize,
+                    EGL10.EGL_DEPTH_SIZE, depthSize,
+                    EGL10.EGL_STENCIL_SIZE, stencilSize,
+                    EGL10.EGL_NONE});
+            mValue = new int[1];
+            mRedSize = redSize;
+            mGreenSize = greenSize;
+            mBlueSize = blueSize;
+            mAlphaSize = alphaSize;
+            mDepthSize = depthSize;
+            mStencilSize = stencilSize;
+        }
+
+        @Override
+        public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display,
+                                      EGLConfig[] configs) {
+            for (EGLConfig config : configs) {
+                int d = findConfigAttrib(egl, display, config,
+                        EGL10.EGL_DEPTH_SIZE, 0);
+                int s = findConfigAttrib(egl, display, config,
+                        EGL10.EGL_STENCIL_SIZE, 0);
+                if ((d >= mDepthSize) && (s >= mStencilSize)) {
+                    int r = findConfigAttrib(egl, display, config,
+                            EGL10.EGL_RED_SIZE, 0);
+                    int g = findConfigAttrib(egl, display, config,
+                            EGL10.EGL_GREEN_SIZE, 0);
+                    int b = findConfigAttrib(egl, display, config,
+                            EGL10.EGL_BLUE_SIZE, 0);
+                    int a = findConfigAttrib(egl, display, config,
+                            EGL10.EGL_ALPHA_SIZE, 0);
+                    if ((r == mRedSize) && (g == mGreenSize)
+                            && (b == mBlueSize) && (a == mAlphaSize)) {
+                        return config;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private int findConfigAttrib(EGL10 egl, EGLDisplay display,
+                                     EGLConfig config, int attribute, int defaultValue) {
+
+            if (egl.eglGetConfigAttrib(display, config, attribute, mValue)) {
+                return mValue[0];
+            }
+            return defaultValue;
+        }
+    }
+
+    private class SimpleEGLConfigChooser extends ComponentSizeChooser {
+        public SimpleEGLConfigChooser(boolean withDepthBuffer) {
+            super(8, 8, 8, 0, withDepthBuffer ? 16 : 0, 0);
+        }
     }
 }

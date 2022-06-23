@@ -33,9 +33,47 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView
     private static final String TAG = "DanmakuGLSurfaceView";
     private static final boolean DEBUG = GLConstants.DEBUG_DANMAKUGLSURFACEVIEW;
     private static final boolean DEBUG_DRAW = GLConstants.DEBUG_DANMAKUGLSURFACEVIEW_DRAW_STATUS;
-
+    private static final int MAX_RECORD_SIZE = 50;
+    private static final int ONE_SECOND = 1000;
     private final TextureGLSurfaceViewRenderer mRenderer = new TextureGLSurfaceViewRenderer(this);
+    protected volatile DrawHandler handler;
+    protected int mDrawingThreadType = THREAD_TYPE_NORMAL_PRIORITY;
+    protected boolean mRequestRender = false;
     private boolean mPause = true;
+    //==================================以下和弹幕库相关======================================
+    private DrawHandler.Callback mCallback;
+    private HandlerThread mHandlerThread;
+    private boolean isSurfaceCreated;
+    private OnDanmakuClickListener mOnDanmakuClickListener;
+    private float mXOff;
+    private float mYOff;
+    private DanmakuTouchHelper mTouchHelper;
+    private boolean mShowFps;
+    private boolean mDanmakuVisible = true;
+    private LinkedList<Long> mDrawTimes;
+    /**
+     * 该mBitmap，mCanvas用来作为原先绘制方式的画布位图，大小等于view的大小
+     * 因为DrawTask需要操作一个Canvas，所以构造了一个和原来相同的画布
+     * 绘制内容并不会显示
+     */
+    private Bitmap mBitmap;
+    private Canvas mCanvas;
+    private int mResumeTryCount = 0;
+    private final Runnable mResumeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            DrawHandler drawHandler = handler;
+            if (drawHandler == null) {
+                return;
+            }
+            mResumeTryCount++;
+            if (mResumeTryCount > 4 || DanmakuGLSurfaceView.this.isShown()) {
+                drawHandler.resume();
+            } else {
+                drawHandler.postDelayed(this, 100 * mResumeTryCount);
+            }
+        }
+    };
 
     public DanmakuGLSurfaceView(Context context) {
         super(context);
@@ -92,51 +130,14 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView
     }
 
     @Override
-    public void setAlpha(float alpha) {
-        mRenderer.getGLDanmakuHandler().setAlpha(alpha);
-    }
-
-    @Override
     public float getAlpha() {
         return mRenderer.getGLDanmakuHandler().getAlpha();
     }
 
-    //==================================以下和弹幕库相关======================================
-    private DrawHandler.Callback mCallback;
-
-    private HandlerThread mHandlerThread;
-
-    protected volatile DrawHandler handler;
-
-    private boolean isSurfaceCreated;
-
-    private OnDanmakuClickListener mOnDanmakuClickListener;
-
-    private float mXOff;
-
-    private float mYOff;
-
-    private DanmakuTouchHelper mTouchHelper;
-
-    private boolean mShowFps;
-
-    private boolean mDanmakuVisible = true;
-
-    protected int mDrawingThreadType = THREAD_TYPE_NORMAL_PRIORITY;
-
-    protected boolean mRequestRender = false;
-
-    private static final int MAX_RECORD_SIZE = 50;
-    private static final int ONE_SECOND = 1000;
-    private LinkedList<Long> mDrawTimes;
-
-    /**
-     * 该mBitmap，mCanvas用来作为原先绘制方式的画布位图，大小等于view的大小
-     * 因为DrawTask需要操作一个Canvas，所以构造了一个和原来相同的画布
-     * 绘制内容并不会显示
-     */
-    private Bitmap mBitmap;
-    private Canvas mCanvas;
+    @Override
+    public void setAlpha(float alpha) {
+        mRenderer.getGLDanmakuHandler().setAlpha(alpha);
+    }
 
     public void addDanmaku(BaseDanmaku item) {
         if (handler != null) {
@@ -405,24 +406,6 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView
         }
     }
 
-    private int mResumeTryCount = 0;
-
-    private Runnable mResumeRunnable = new Runnable() {
-        @Override
-        public void run() {
-            DrawHandler drawHandler = handler;
-            if (drawHandler == null) {
-                return;
-            }
-            mResumeTryCount++;
-            if (mResumeTryCount > 4 || DanmakuGLSurfaceView.this.isShown()) {
-                drawHandler.resume();
-            } else {
-                drawHandler.postDelayed(this, 100 * mResumeTryCount);
-            }
-        }
-    };
-
     @Override
     public void resume() {
         if (DEBUG) {
@@ -458,6 +441,8 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView
         if (DEBUG) {
             DanmakuLoggers.d(TAG, "start");
         }
+        show();
+        resume();
         start(0);
     }
 
@@ -618,11 +603,6 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView
     }
 
     @Override
-    public void setOnDanmakuClickListener(OnDanmakuClickListener listener) {
-        mOnDanmakuClickListener = listener;
-    }
-
-    @Override
     public void setOnDanmakuClickListener(OnDanmakuClickListener listener, float xOff,
                                           float yOff) {
         mOnDanmakuClickListener = listener;
@@ -633,6 +613,11 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView
     @Override
     public OnDanmakuClickListener getOnDanmakuClickListener() {
         return mOnDanmakuClickListener;
+    }
+
+    @Override
+    public void setOnDanmakuClickListener(OnDanmakuClickListener listener) {
+        mOnDanmakuClickListener = listener;
     }
 
     @Override

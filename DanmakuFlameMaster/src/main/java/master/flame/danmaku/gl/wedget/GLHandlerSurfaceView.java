@@ -40,7 +40,7 @@ public abstract class GLHandlerSurfaceView extends SurfaceView
     private final static long NORMAL_WAIT_TIME = 20;
     private final static boolean DEBUG = GLConstants.DEBUG_GLHANDLERSURFACEVIEW;
     private final static boolean LOG_ATTACH_DETACH = GLConstants.LOG_ATTACH_DETACH;
-    private final static boolean LOG_THREADS = GLConstants.LOG_ATTACH_DETACH;
+    private final static boolean LOG_THREADS = GLConstants.LOG_THREADS;
     private final static boolean LOG_PAUSE_RESUME = GLConstants.LOG_PAUSE_RESUME;
     private final static boolean LOG_SURFACE = GLConstants.LOG_SURFACE;
     private final static boolean LOG_RENDERER = GLConstants.LOG_RENDERER;

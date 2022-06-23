@@ -17,6 +17,7 @@
 package master.flame.danmaku.danmaku.model.android;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,18 +65,19 @@ public class Danmakus implements IDanmakus {
     public Danmakus(int sortType, boolean duplicateMergingEnabled, BaseComparator baseComparator) {
         BaseComparator comparator = null;
         if (sortType == ST_BY_TIME) {
-            comparator = baseComparator == null ? new TimeComparator(duplicateMergingEnabled) : baseComparator;
+            comparator = baseComparator == null ? new TimeComparator(duplicateMergingEnabled) :
+                    baseComparator;
         } else if (sortType == ST_BY_YPOS) {
             comparator = new YPosComparator(duplicateMergingEnabled);
         } else if (sortType == ST_BY_YPOS_DESC) {
             comparator = new YPosDescComparator(duplicateMergingEnabled);
         }
         if (sortType == ST_BY_LIST) {
-            items = new LinkedList<>();
+            items = Collections.synchronizedList(new LinkedList<BaseDanmaku>());
         } else {
             mDuplicateMergingEnabled = duplicateMergingEnabled;
             comparator.setDuplicateMergingEnabled(duplicateMergingEnabled);
-            items = new TreeSet<>(comparator);
+            items = Collections.synchronizedSortedSet(new TreeSet<>(comparator));
             mComparator = comparator;
         }
         mSortType = sortType;
@@ -176,7 +178,7 @@ public class Danmakus implements IDanmakus {
             return null;
         }
         if (subItems == null) {
-            if(mSortType == ST_BY_LIST) {
+            if (mSortType == ST_BY_LIST) {
                 subItems = new Danmakus(Danmakus.ST_BY_LIST);
                 subItems.mLockObject = this.mLockObject;
                 synchronized (this.mLockObject) {
@@ -298,22 +300,24 @@ public class Danmakus implements IDanmakus {
     @Override
     public void forEach(Consumer<? super BaseDanmaku, ?> consumer) {
         consumer.before();
-        Iterator<BaseDanmaku> it = items.iterator();
-        while (it.hasNext()) {
-            BaseDanmaku next = it.next();
-            if (next == null) {
-                continue;
-            }
-            int action = consumer.accept(next);
-            if (action == DefaultConsumer.ACTION_BREAK) {
-                break;
-            } else if (action == DefaultConsumer.ACTION_REMOVE) {
-                it.remove();
-                mSize.decrementAndGet();
-            } else if (action == DefaultConsumer.ACTION_REMOVE_AND_BREAK) {
-                it.remove();
-                mSize.decrementAndGet();
-                break;
+        synchronized (items) {
+            Iterator<BaseDanmaku> it = items.iterator();
+            while (it.hasNext()) {
+                BaseDanmaku next = it.next();
+                if (next == null) {
+                    continue;
+                }
+                int action = consumer.accept(next);
+                if (action == DefaultConsumer.ACTION_BREAK) {
+                    break;
+                } else if (action == DefaultConsumer.ACTION_REMOVE) {
+                    it.remove();
+                    mSize.decrementAndGet();
+                } else if (action == DefaultConsumer.ACTION_REMOVE_AND_BREAK) {
+                    it.remove();
+                    mSize.decrementAndGet();
+                    break;
+                }
             }
         }
         consumer.after();

@@ -336,10 +336,12 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView
         if (mCanvas == null) {
             initTempCanvas(getWidth(), getHeight());
         }
-        if (mCanvas != null) {
+        if (mCanvas != null && handler != null) {
             handler.draw(mCanvas);
         }
-        mRenderer.requestRender();
+        if (mRenderer != null) {
+            mRenderer.requestRender();
+        }
         if (mShowFps) {
             //todo 暂时fps，暂时没有想到解决方案，但可以通过打印log方式
             //DanmakuLoggers.i(TAG, String.format("danmuku fps = %.2f", fps()));

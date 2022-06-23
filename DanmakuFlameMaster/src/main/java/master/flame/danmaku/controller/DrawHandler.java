@@ -218,67 +218,22 @@ public class DrawHandler extends Handler {
                 }
                 break;
             case SHOW_DANMAKUS:
-                mDanmakusVisible = true;
-                Long start = (Long) msg.obj;
-                boolean resume = false;
-                if (drawTask != null) {
-                    if (start == null) {
-                        timer.update(getCurrentTime());
-                        drawTask.requestClear();
-                    } else {
-                        drawTask.start();
-                        drawTask.seek(start);
-                        drawTask.requestClear();
-                        resume = true;
-                    }
+                boolean resume = onSHOW_DANMAKUS((Long) msg.obj);
+                if (resume) {
+                    onSTART((Long) msg.obj);
+                    onRESUME();
                 }
-                if (quitFlag && mDanmakuView != null) {
-                    mDanmakuView.drawDanmakus();
-                }
-                notifyRendering();
-                if (!resume) {
-                    break;
-                }
+                break;
             case START:
-                Long startTime = (Long) msg.obj;
-                if (startTime != null) {
-                    pausedPosition = startTime;
-                } else {
-                    pausedPosition = 0;
-                }
+                onSTART((Long) msg.obj);
+                onRESUME();
+                break;
             case SEEK_POS:
-                if (what == SEEK_POS) {
-                    quitFlag = true;
-                    quitUpdateThread();
-                    Long position = (Long) msg.obj;
-                    long deltaMs = position - timer.currMillisecond;
-                    mTimeBase -= deltaMs;
-                    timer.update(position);
-                    mContext.mGlobalFlagValues.updateMeasureFlag();
-                    if (drawTask != null) {
-                        drawTask.seek(position);
-                    }
-                    pausedPosition = position;
-                }
+                onSEEK_POS((Long) msg.obj);
+                onRESUME();
+                break;
             case RESUME:
-                removeMessages(DrawHandler.PAUSE);
-                quitFlag = false;
-                if (mReady) {
-                    mRenderingState.reset();
-                    mDrawTimes.clear();
-                    mTimeBase = SystemClock.uptimeMillis() - pausedPosition;
-                    timer.update(pausedPosition);
-                    removeMessages(RESUME);
-                    sendEmptyMessage(UPDATE);
-                    drawTask.start();
-                    notifyRendering();
-                    mInSeekingAction = false;
-                    if (drawTask != null) {
-                        drawTask.onPlayStateChanged(IDrawTask.PLAY_STATE_PLAYING);
-                    }
-                } else {
-                    sendEmptyMessageDelayed(RESUME, 100);
-                }
+                onRESUME();
                 break;
             case UPDATE:
                 if (mContext.updateMethod == 0) {
@@ -299,78 +254,27 @@ public class DrawHandler extends Handler {
                 }
                 break;
             case HIDE_DANMAKUS:
-                mDanmakusVisible = false;
-                if (mDanmakuView != null) {
-                    mDanmakuView.clear();
+                boolean quitDrawTask = onHIDE_DANMAKUS((Boolean) msg.obj);
+                if (quitDrawTask) {
+                    onPAUSE();
+                    onQUIT();
                 }
+                break;
+            case PAUSE:
+                onPAUSE();
+                onQUIT();
+                break;
+            case QUIT:
+                removeCallbacksAndMessages(null);
+                onQUIT();
                 if (this.drawTask != null) {
-                    this.drawTask.requestClear();
-                    this.drawTask.requestHide();
-                }
-                Boolean quitDrawTask = (Boolean) msg.obj;
-                if (quitDrawTask && this.drawTask != null) {
                     this.drawTask.quit();
                 }
-                if (!quitDrawTask) {
-                    break;
+                if (mParser != null) {
+                    mParser.release();
                 }
-            case PAUSE:
-                removeMessages(DrawHandler.RESUME);
-                removeMessages(UPDATE);
-                if (drawTask != null) {
-                    drawTask.onPlayStateChanged(IDrawTask.PLAY_STATE_PAUSE);
-                }
-            case QUIT:
-                if (what == QUIT) {
-                    removeCallbacksAndMessages(null);
-                }
-                quitFlag = true;
-                syncTimerIfNeeded();
-                pausedPosition = timer.currMillisecond;
-                if (mUpdateInSeparateThread) {
-                    notifyRendering();
-                    quitUpdateThread();
-                }
-                if (mFrameCallback != null) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        Choreographer.getInstance().removeFrameCallback(mFrameCallback);
-                        try {
-                            Method method = Choreographer.class.getMethod("releaseInstance");
-                            method.invoke(null);
-                        } catch (Throwable e) {
-                            e.printStackTrace();
-                        }
-                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                        Choreographer.getInstance().removeFrameCallback(mFrameCallback);
-                        Choreographer old = Choreographer.getInstance();
-                        try {
-                            Field sThreadInstance =
-                                    Choreographer.class.getDeclaredField("sThreadInstance");
-                            sThreadInstance.setAccessible(true);
-                            ThreadLocal<Choreographer> instance =
-                                    (ThreadLocal<Choreographer>) sThreadInstance.get(null);
-                            instance.remove();
-                            Field field =
-                                    Choreographer.class.getDeclaredField("mDisplayEventReceiver");
-                            field.setAccessible(true);
-                            Object object = field.get(old);
-                            Method method = object.getClass().getMethod("dispose");
-                            method.invoke(object, null);
-                        } catch (Throwable e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-                if (what == QUIT) {
-                    if (this.drawTask != null) {
-                        this.drawTask.quit();
-                    }
-                    if (mParser != null) {
-                        mParser.release();
-                    }
-                    if (this.getLooper() != Looper.getMainLooper()) {
-                        this.getLooper().quit();
-                    }
+                if (this.getLooper() != Looper.getMainLooper()) {
+                    this.getLooper().quit();
                 }
                 break;
             case NOTIFY_RENDERING:
@@ -393,6 +297,135 @@ public class DrawHandler extends Handler {
                     drawTask.requestRender();
                 }
                 break;
+        }
+    }
+
+    private void onSTART(Long startTime) {
+        if (startTime != null) {
+            pausedPosition = startTime;
+        } else {
+            pausedPosition = 0;
+        }
+    }
+
+    private void onSEEK_POS(Long position) {
+        // if (what == SEEK_POS) {
+        quitFlag = true;
+        quitUpdateThread();
+        long deltaMs = position - timer.currMillisecond;
+        mTimeBase -= deltaMs;
+        timer.update(position);
+        mContext.mGlobalFlagValues.updateMeasureFlag();
+        if (drawTask != null) {
+            drawTask.seek(position);
+        }
+        pausedPosition = position;
+        // }
+    }
+
+    private void onRESUME() {
+        removeMessages(DrawHandler.PAUSE);
+        quitFlag = false;
+        if (mReady) {
+            mRenderingState.reset();
+            mDrawTimes.clear();
+            mTimeBase = SystemClock.uptimeMillis() - pausedPosition;
+            timer.update(pausedPosition);
+            removeMessages(RESUME);
+            sendEmptyMessage(UPDATE);
+            drawTask.start();
+            notifyRendering();
+            mInSeekingAction = false;
+            if (drawTask != null) {
+                drawTask.onPlayStateChanged(IDrawTask.PLAY_STATE_PLAYING);
+            }
+        } else {
+            sendEmptyMessageDelayed(RESUME, 100);
+        }
+    }
+
+    private boolean onSHOW_DANMAKUS(Long start) {
+        mDanmakusVisible = true;
+        boolean resume = false;
+        if (drawTask != null) {
+            if (start == null) {
+                timer.update(getCurrentTime());
+                drawTask.requestClear();
+            } else {
+                drawTask.start();
+                drawTask.seek(start);
+                drawTask.requestClear();
+                resume = true;
+            }
+        }
+        if (quitFlag && mDanmakuView != null) {
+            mDanmakuView.drawDanmakus();
+        }
+        notifyRendering();
+        return resume;
+
+    }
+
+    private boolean onHIDE_DANMAKUS(Boolean quitDrawTask) {
+        mDanmakusVisible = false;
+        if (mDanmakuView != null) {
+            mDanmakuView.clear();
+        }
+        if (this.drawTask != null) {
+            this.drawTask.requestClear();
+            this.drawTask.requestHide();
+        }
+        if (quitDrawTask && this.drawTask != null) {
+            this.drawTask.quit();
+        }
+        return quitDrawTask;
+    }
+
+    private void onPAUSE() {
+        removeMessages(DrawHandler.RESUME);
+        removeMessages(UPDATE);
+        if (drawTask != null) {
+            drawTask.onPlayStateChanged(IDrawTask.PLAY_STATE_PAUSE);
+        }
+    }
+
+    private void onQUIT() {
+        quitFlag = true;
+        syncTimerIfNeeded();
+        pausedPosition = timer.currMillisecond;
+        if (mUpdateInSeparateThread) {
+            notifyRendering();
+            quitUpdateThread();
+        }
+        if (mFrameCallback != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                Choreographer.getInstance().removeFrameCallback(mFrameCallback);
+                try {
+                    Method method = Choreographer.class.getMethod("releaseInstance");
+                    method.invoke(null);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                Choreographer.getInstance().removeFrameCallback(mFrameCallback);
+                Choreographer old = Choreographer.getInstance();
+                try {
+                    Field sThreadInstance =
+                            Choreographer.class.getDeclaredField("sThreadInstance");
+                    sThreadInstance.setAccessible(true);
+                    ThreadLocal<Choreographer> instance =
+                            (ThreadLocal<Choreographer>) sThreadInstance.get(null);
+                    instance.remove();
+                    Field field =
+                            Choreographer.class.getDeclaredField("mDisplayEventReceiver");
+                    field.setAccessible(true);
+                    Object object = field.get(old);
+                    Method method = object.getClass().getMethod("dispose");
+                    method.invoke(object, null);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

@@ -3,15 +3,15 @@ package com.sample;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
-import android.graphics.Bitmap;
+import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -19,25 +19,19 @@ import android.text.TextPaint;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ImageSpan;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.Menu;
+import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.PopupWindow;
+import android.widget.FrameLayout.LayoutParams;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
-
-import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.nostra13.universalimageloader.core.assist.ImageSize;
-import com.nostra13.universalimageloader.core.assist.ViewScaleType;
-import com.nostra13.universalimageloader.core.imageaware.NonViewAware;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -53,24 +47,33 @@ import master.flame.danmaku.danmaku.model.BaseDanmaku;
 import master.flame.danmaku.danmaku.model.DanmakuTimer;
 import master.flame.danmaku.danmaku.model.IDanmakus;
 import master.flame.danmaku.danmaku.model.IDisplayer;
-import master.flame.danmaku.danmaku.model.android.AndroidDisplayer;
 import master.flame.danmaku.danmaku.model.android.BaseCacheStuffer;
 import master.flame.danmaku.danmaku.model.android.DanmakuContext;
 import master.flame.danmaku.danmaku.model.android.Danmakus;
 import master.flame.danmaku.danmaku.model.android.SpannedCacheStuffer;
-import master.flame.danmaku.danmaku.model.android.ViewCacheStuffer;
 import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
 import master.flame.danmaku.danmaku.parser.IDataSource;
 import master.flame.danmaku.danmaku.util.IOUtils;
 import master.flame.danmaku.danmaku.util.SystemClock;
+import master.flame.danmaku.extensions.CustomCacheStuffer;
+import master.flame.danmaku.ui.widget.DanmakuGLSurfaceView;
+import master.flame.danmaku.ui.widget.DanmakuSurfaceView;
+import master.flame.danmaku.ui.widget.DanmakuTextureView;
+import master.flame.danmaku.ui.widget.DanmakuView;
 
-public class UglyViewCacheStufferSampleActivity extends Activity implements View.OnClickListener {
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
+public class BiliDanmaActivity extends Activity implements View.OnClickListener {
+    public static final String TYPE = "danmaku_type";
+    public static final int TYPE_DANMAKU_VIEW = 1;
+    public static final int TYPE_DANMAKU_GL_VIEW = 2;
+    public static final int TYPE_DANMAKU_TEXTURE_VIEW = 3;
+    public static final int TYPE_DANMAKU_SURFACE_VIEW = 4;
+
+    private ViewGroup rootView;
     private IDanmakuView mDanmakuView;
 
     private View mMediaController;
-
-    public PopupWindow mPopupWindow;
 
     private Button mBtnRotate;
 
@@ -89,7 +92,10 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
     private Button mBtnSendDanmakuTextAndImage;
 
     private Button mBtnSendDanmakus;
-    private DanmakuContext mContext;
+
+    private DanmakuContext mDanmakuContext;
+    private int mDanmakuType;
+
     private BaseCacheStuffer.Proxy mCacheStufferAdapter = new BaseCacheStuffer.Proxy() {
 
         private Drawable mDrawable;
@@ -138,7 +144,6 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
             // TODO 重要:清理含有ImageSpan的text中的一些占用内存的资源 例如drawable
         }
     };
-    private int mIconWidth;
 
     /**
      * 绘制背景(自定义弹幕样式)
@@ -156,95 +161,41 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
         @Override
         public void drawBackground(BaseDanmaku danmaku, Canvas canvas, float left, float top) {
             paint.setColor(0x8125309b);
-            canvas.drawRect(left + 2, top + 2, left + danmaku.paintWidth - 2, top + danmaku.paintHeight - 2, paint);
+            canvas.drawRect(left + 2, top + 2, left + danmaku.paintWidth - 2,
+                    top + danmaku.paintHeight - 2, paint);
         }
 
         @Override
-        public void drawStroke(BaseDanmaku danmaku, String lineText, Canvas canvas, float left, float top, Paint paint) {
+        public void drawStroke(BaseDanmaku danmaku, String lineText, Canvas canvas, float left,
+                               float top, Paint paint) {
             // 禁用描边绘制
-        }
-    }
-
-    public class MyViewHolder extends ViewCacheStuffer.ViewHolder {
-
-        private final ImageView mIcon;
-        private final TextView mText;
-
-        public MyViewHolder(View itemView) {
-            super(itemView);
-            mIcon = (ImageView) itemView.findViewById(R.id.icon);
-            mText = (TextView) itemView.findViewById(R.id.text);
-        }
-
-    }
-
-    public static class MyImageWare extends NonViewAware {
-
-        private long start;
-        private int id;
-        private WeakReference<IDanmakuView> danmakuViewRef;
-        private BaseDanmaku danmaku;
-        private Bitmap bitmap;
-
-        public MyImageWare(String imageUri, BaseDanmaku danmaku, int width, int height, IDanmakuView danmakuView) {
-            this(imageUri, new ImageSize(width, height), ViewScaleType.FIT_INSIDE);
-            if (danmaku == null) {
-                throw new IllegalArgumentException("danmaku may not be null");
-            }
-            this.danmaku = danmaku;
-            this.id = danmaku.hashCode();
-            this.danmakuViewRef = new WeakReference<>(danmakuView);
-            this.start = SystemClock.uptimeMillis();
-        }
-
-        @Override
-        public int getId() {
-            return this.id;
-        }
-
-        public String getImageUri() {
-            return this.imageUri;
-        }
-
-        private MyImageWare(ImageSize imageSize, ViewScaleType scaleType) {
-            super(imageSize, scaleType);
-        }
-
-        private MyImageWare(String imageUri, ImageSize imageSize, ViewScaleType scaleType) {
-            super(imageUri, imageSize, scaleType);
-        }
-
-        @Override
-        public boolean setImageDrawable(Drawable drawable) {
-            return super.setImageDrawable(drawable);
-        }
-
-        @Override
-        public boolean setImageBitmap(Bitmap bitmap) {
-//            if (this.danmaku.isTimeOut() || this.danmaku.isFiltered()) {
-//                return true;
-//            }
-            if (this.danmaku.text.toString().contains("textview")) {
-                Log.e("DFM", (SystemClock.uptimeMillis() - this.start) + "ms=====> inside" + danmaku.tag + ":" + danmaku.getActualTime() + ",url: bitmap" + (bitmap == null));
-            }
-            this.bitmap = bitmap;
-            IDanmakuView danmakuView = danmakuViewRef.get();
-            if (danmakuView != null) {
-                danmakuView.invalidateDanmaku(danmaku, true);
-            }
-            return true;
         }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        //     // 获取系统window支持的模式
+        //     val modes = getWindow().getWindowManager().getDefaultDisplay().getSupportedModes()
+        //     // 对获取的模式，基于刷新率的大小进行排序，从小到大排序
+        //     modes.sortBy {
+        //         it.refreshRate
+        //     }
+        //
+        //     window.let {
+        //         val lp = it.attributes
+        //         // 取出最小的那一个刷新率，直接设置给window
+        //         lp.preferredDisplayModeId = modes.first().modeId
+        //         it.attributes = lp
+        //     }
+        // }
         super.onCreate(savedInstanceState);
-        // Create global configuration and initialize ImageLoader with this config
-        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).memoryCache(new LruMemoryCache(2 * 1024 * 1024))
-                .memoryCacheSize(2 * 1024 * 1024)
-                .memoryCacheSizePercentage(13).build(); // default
-        ImageLoader.getInstance().init(config);
+        mDanmakuType = getIntent().getIntExtra(TYPE, TYPE_DANMAKU_GL_VIEW);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
+        rootView = findViewById(R.id.danma_rootview);
         findViews();
     }
 
@@ -275,7 +226,6 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
     }
 
     private void findViews() {
-
         mMediaController = findViewById(R.id.media_controller);
         mBtnRotate = (Button) findViewById(R.id.rotate);
         mBtnHideDanmaku = (Button) findViewById(R.id.btn_hide);
@@ -294,11 +244,19 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
         mBtnSendDanmaku.setOnClickListener(this);
         mBtnSendDanmakuTextAndImage.setOnClickListener(this);
         mBtnSendDanmakus.setOnClickListener(this);
+        TextView viewById = findViewById(R.id.sv_image);
+        viewById.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "SSS", Toast.LENGTH_SHORT).show();
+            }
+        });
+        viewById.setText(String.valueOf(TYPE_DANMAKU_VIEW));
 
         // VideoView
         VideoView mVideoView = (VideoView) findViewById(R.id.videoview);
-        // DanmakuView
 
+        // DanmakuView
         // 设置最大显示行数
         HashMap<Integer, Integer> maxLinesPair = new HashMap<Integer, Integer>();
         maxLinesPair.put(BaseDanmaku.TYPE_SCROLL_RL, 5); // 滚动弹幕最大显示5行
@@ -306,81 +264,38 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
         HashMap<Integer, Boolean> overlappingEnablePair = new HashMap<Integer, Boolean>();
         overlappingEnablePair.put(BaseDanmaku.TYPE_SCROLL_RL, true);
         overlappingEnablePair.put(BaseDanmaku.TYPE_FIX_TOP, true);
+        if (mDanmakuType == TYPE_DANMAKU_VIEW) {
+            mDanmakuView = new DanmakuView(getApplicationContext());
+        } else if (mDanmakuType == TYPE_DANMAKU_GL_VIEW) {
+            mDanmakuView = new DanmakuGLSurfaceView(getApplicationContext());
+        } else if (mDanmakuType == TYPE_DANMAKU_SURFACE_VIEW) {
+            mDanmakuView = new DanmakuSurfaceView(getApplicationContext());
+        } else if (mDanmakuType == TYPE_DANMAKU_TEXTURE_VIEW) {
+            mDanmakuView = new DanmakuTextureView(getApplicationContext());
+        }
 
+        rootView.addView((View) mDanmakuView, new LayoutParams(MATCH_PARENT, MATCH_PARENT));
         //mDanmakuView = (IDanmakuView) findViewById(R.id.sv_danmaku);
-        mContext = DanmakuContext.create(mDanmakuView);
-
-        mIconWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, getResources().getDisplayMetrics());
-        mContext.setDanmakuBold(true);
-        mContext.setDanmakuStyle(IDisplayer.DANMAKU_STYLE_STROKEN, 3).setDuplicateMergingEnabled(false).setScrollSpeedFactor(1.2f).setScaleTextSize(1.2f)
-                .setCacheStuffer(new ViewCacheStuffer<MyViewHolder>() {
-
-                    @Override
-                    public MyViewHolder onCreateViewHolder(int viewType) {
-                        Log.e("DFM", "onCreateViewHolder:" + viewType);
-                        return new MyViewHolder(View.inflate(getApplicationContext(), R.layout.layout_view_cache, null));
-                    }
-
-                    @Override
-                    public void onBindViewHolder(int viewType, MyViewHolder viewHolder, BaseDanmaku danmaku, AndroidDisplayer.DisplayerConfig displayerConfig, TextPaint paint) {
-                        if (paint != null)
-                            viewHolder.mText.getPaint().set(paint);
-                        viewHolder.mText.setText(danmaku.text);
-                        viewHolder.mText.setTextColor(danmaku.textColor);
-                        viewHolder.mText.setTextSize(TypedValue.COMPLEX_UNIT_PX, danmaku.textSize);
-                        Bitmap bitmap = null;
-                        MyImageWare imageWare = (MyImageWare) danmaku.tag;
-                        if (imageWare != null) {
-                            bitmap = imageWare.bitmap;
-                            if (danmaku.text.toString().contains("textview")) {
-                                Log.e("DFM", "onBindViewHolder======> bitmap:" + (bitmap == null) + "  " + danmaku.tag + "url:" + imageWare.getImageUri());
-                            }
-                        }
-                        if (bitmap != null) {
-                            viewHolder.mIcon.setImageBitmap(bitmap);
-                            if (danmaku.text.toString().contains("textview")) {
-                                Log.e("DFM", "onBindViewHolder======>" + danmaku.tag + "url:" + imageWare.getImageUri());
-                            }
-                        } else {
-                            viewHolder.mIcon.setImageResource(R.drawable.ic_launcher);
-                        }
-                    }
-
-                    @Override
-                    public void releaseResource(BaseDanmaku danmaku) {
-                        MyImageWare imageWare = (MyImageWare) danmaku.tag;
-                        if (imageWare != null) {
-                            ImageLoader.getInstance().cancelDisplayTask(imageWare);
-                        }
-                        danmaku.setTag(null);
-                        Log.e("DFM", "releaseResource url:" + danmaku.text);
-                    }
-
-
-                    String[] avatars = { "http://i0.hdslb.com/bfs/face/e13fcb94342c325debb2d3a1d9e503ac4f083514.jpg@45w_45h.webp",
-                            "http://i0.hdslb.com/bfs/bangumi/2558e1341d2e934a7e06bb7d92551fef5c82c172.jpg@72w_72h.webp", "http://i0.hdslb.com/bfs/face/128edefeef7ce9cfc443a2489d8a1c7d44d88b80.jpg@72w_72h.webp"};
-                    @Override
-                    public void prepare(BaseDanmaku danmaku, boolean fromWorkerThread) {
-                        if (danmaku.isTimeOut()) {
-                            return;
-                        }
-                        MyImageWare imageWare = (MyImageWare) danmaku.tag;
-                        if (imageWare == null) {
-                            String avatar = avatars[danmaku.index % avatars.length];
-                            imageWare = new MyImageWare(avatar, danmaku, mIconWidth, mIconWidth, mDanmakuView);
-                            danmaku.setTag(imageWare);
-                        }
-                        if (danmaku.text.toString().contains("textview")) {
-                            Log.e("DFM", "onAsyncLoadResource======>" + danmaku.tag + "url:" + imageWare.getImageUri());
-                        }
-                        ImageLoader.getInstance().displayImage(imageWare.getImageUri(), imageWare);
-                    }
-
-                }, null) // 图文混排使用SpannedCacheStuffer
-//        .setCacheStuffer(new BackgroundCacheStuffer())  // 绘制背景使用BackgroundCacheStuffer
+        mDanmakuContext = DanmakuContext.create(mDanmakuView);
+        mDanmakuContext.setDanmakuStyle(IDisplayer.DANMAKU_STYLE_STROKEN, 3)
+                .setDuplicateMergingEnabled(false).setScrollSpeedFactor(1.2f).setScaleTextSize(1.2f)
+                .setCacheStuffer(new CustomCacheStuffer(getApplicationContext(), mDanmakuView),
+                        mCacheStufferAdapter)
+                // 图文混排使用SpannedCacheStuffer
+                //.setCacheStuffer(new BackgroundCacheStuffer())
+                // 绘制背景使用BackgroundCacheStuffer
                 .setMaximumLines(maxLinesPair)
-                .preventOverlapping(overlappingEnablePair);
+                .setAllowDelayInCacheModel(false)
+                .alignBottom(true)
+                .preventOverlapping(overlappingEnablePair).setDanmakuMargin(40);
+
         if (mDanmakuView != null) {
+            if (mDanmakuView instanceof SurfaceView) {
+                ((SurfaceView) mDanmakuView).setZOrderOnTop(true);
+            } else if (mDanmakuView instanceof DanmakuTextureView) {
+                ((DanmakuTextureView) mDanmakuView).setWillNotDraw(false);
+            }
+            mDanmakuView.enableDanmakuDrawingCache(true);
             mParser = createParser(this.getResources().openRawResource(R.raw.comments));
             mDanmakuView.setCallback(new master.flame.danmaku.controller.DrawHandler.Callback() {
                 @Override
@@ -399,6 +314,7 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
 
                 @Override
                 public void prepared() {
+                    Log.d("DFM", "prepared");
                     mDanmakuView.start();
                 }
             });
@@ -409,6 +325,8 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
                     Log.d("DFM", "onDanmakuClick: danmakus size:" + danmakus.size());
                     BaseDanmaku latest = danmakus.last();
                     if (null != latest) {
+                        Toast.makeText(getApplicationContext(), latest.text, Toast.LENGTH_SHORT)
+                                .show();
                         Log.d("DFM", "onDanmakuClick: text of latest danmaku:" + latest.text);
                         return true;
                     }
@@ -422,13 +340,14 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
 
                 @Override
                 public boolean onViewClick(IDanmakuView view) {
-                    mMediaController.setVisibility(View.VISIBLE);
+                    Toast.makeText(getApplicationContext(), "onViewClick", Toast.LENGTH_SHORT)
+                            .show();
+                    // mMediaController.setVisibility(View.VISIBLE);
                     return false;
                 }
             });
-            mDanmakuView.prepare(mParser, mContext);
+            mDanmakuView.prepare(mParser, mDanmakuContext);
             mDanmakuView.showFPS(true);
-            mDanmakuView.enableDanmakuDrawingCache(true);
         }
 
         if (mVideoView != null) {
@@ -438,7 +357,9 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
                     mediaPlayer.start();
                 }
             });
-            mVideoView.setVideoPath(Environment.getExternalStorageDirectory() + "/1.flv");
+            mVideoView.setVideoURI(
+                    Uri.parse(
+                            "http://lxcode.bs2cdn.yy.com/28ccd4f7-d651-4f6d-b72b-dd3a1f5bf3f6.mp4"));
         }
 
     }
@@ -447,6 +368,7 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
     protected void onPause() {
         super.onPause();
         if (mDanmakuView != null && mDanmakuView.isPrepared()) {
+            Log.d("DFM", "pause");
             mDanmakuView.pause();
         }
     }
@@ -455,6 +377,7 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
     protected void onResume() {
         super.onResume();
         if (mDanmakuView != null && mDanmakuView.isPrepared() && mDanmakuView.isPaused()) {
+            Log.d("DFM", "resume");
             mDanmakuView.resume();
         }
     }
@@ -467,7 +390,6 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
             mDanmakuView.release();
             mDanmakuView = null;
         }
-        ImageLoader.getInstance().destroy();
     }
 
     @Override
@@ -488,13 +410,17 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
 
     @Override
     public void onClick(View v) {
-        if (v == mMediaController) {
-            mMediaController.setVisibility(View.GONE);
-        }
-        if (mDanmakuView == null || !mDanmakuView.isPrepared())
+        // if (v == mMediaController) {
+        //     mMediaController.setVisibility(View.GONE);
+        // }
+        if (mDanmakuView == null || !mDanmakuView.isPrepared()) {
             return;
+        }
         if (v == mBtnRotate) {
-            setRequestedOrientation(getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE ? ActivityInfo.SCREEN_ORIENTATION_PORTRAIT : ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            setRequestedOrientation(
+                    getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE ?
+                            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT :
+                            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         } else if (v == mBtnHideDanmaku) {
             mDanmakuView.hide();
             // mPausedPosition = mDanmakuView.hideAndPauseDrawTask();
@@ -540,7 +466,8 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
     ;
 
     private void addDanmaku(boolean islive) {
-        BaseDanmaku danmaku = mContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL);
+        BaseDanmaku danmaku =
+                mDanmakuContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL);
         if (danmaku == null || mDanmakuView == null) {
             return;
         }
@@ -561,12 +488,12 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
     }
 
     private void addDanmaKuShowTextAndImage(boolean islive) {
-        BaseDanmaku danmaku = mContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL);
+        BaseDanmaku danmaku =
+                mDanmakuContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_FIX_BOTTOM);
         Drawable drawable = getResources().getDrawable(R.drawable.ic_launcher);
         drawable.setBounds(0, 0, 100, 100);
-        //SpannableStringBuilder spannable = createSpannable(drawable);
-        danmaku.text = "这是文本，图片在textview左侧";
-        danmaku.setTag(new MyImageWare("http://i0.hdslb.com/bfs/face/084bd13eb5dc51a64674085bb28e958ecd5addd0.jpg@180w_180h.webp", danmaku, mIconWidth, mIconWidth, mDanmakuView));
+        SpannableStringBuilder spannable = createSpannable(drawable);
+        danmaku.text = spannable;
         danmaku.padding = 5;
         danmaku.priority = 1;  // 一定会显示, 一般用于本机发送的弹幕
         danmaku.isLive = islive;
@@ -584,8 +511,18 @@ public class UglyViewCacheStufferSampleActivity extends Activity implements View
         ImageSpan span = new ImageSpan(drawable);//ImageSpan.ALIGN_BOTTOM);
         spannableStringBuilder.setSpan(span, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         spannableStringBuilder.append("图文混排");
-        spannableStringBuilder.setSpan(new BackgroundColorSpan(Color.parseColor("#8A2233B1")), 0, spannableStringBuilder.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        spannableStringBuilder.setSpan(new BackgroundColorSpan(Color.parseColor("#8A2233B1")), 0,
+                spannableStringBuilder.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
         return spannableStringBuilder;
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            mDanmakuView.getConfig().setDanmakuMargin(20);
+        } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            mDanmakuView.getConfig().setDanmakuMargin(40);
+        }
+    }
 }

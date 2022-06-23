@@ -44,7 +44,7 @@ import master.flame.danmaku.danmaku.util.DanmakuUtils;
 
 import static master.flame.danmaku.danmaku.model.IDanmakus.ST_BY_TIME;
 
-public class BiliDanmukuParser extends BaseDanmakuParser {
+public class BiliDanmakuParser extends BaseDanmakuParser {
 
     static {
         System.setProperty("org.xml.sax.driver", "org.xmlpull.v1.sax2.Driver");

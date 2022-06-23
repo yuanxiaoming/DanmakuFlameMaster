@@ -9,8 +9,8 @@ import javax.microedition.khronos.opengles.GL10;
 import master.flame.danmaku.gl.wedget.GLHandlerSurfaceView;
 import master.flame.danmaku.gl.wedget.GLShareable;
 
-public class TextureGLSurfaceViewRenderer implements GLHandlerSurfaceView.Renderer, GLShareable {
-    private static final String TAG = "SurfaceViewRenderer";
+public class GLSurfaceViewRenderer implements GLHandlerSurfaceView.Renderer, GLShareable {
+    private static final String TAG = "GLSurfaceViewRenderer";
     private GLHandlerSurfaceView mGLSurfaceView;
     private GLDanmakuHandler mGLDanmakuHandler;
     private boolean mCreated = false;
@@ -19,7 +19,7 @@ public class TextureGLSurfaceViewRenderer implements GLHandlerSurfaceView.Render
     private boolean mHide = true;
     private boolean mClearFlag = false;
 
-    public TextureGLSurfaceViewRenderer(GLHandlerSurfaceView surfaceView) {
+    public GLSurfaceViewRenderer(GLHandlerSurfaceView surfaceView) {
         mGLSurfaceView = surfaceView;
         mGLDanmakuHandler = new GLDanmakuHandler(surfaceView);
     }

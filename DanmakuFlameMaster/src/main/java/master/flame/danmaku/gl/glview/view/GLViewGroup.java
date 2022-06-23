@@ -247,9 +247,8 @@ public class GLViewGroup {
         mRunningViews.add(recyclerView);
 
         if (DEBUG_INIT) {
-            DanmakuLoggers.i(TAG,
-                    "init texture id=" + danmaku.id + "\tloopTime=" + loopTime + "\t reuseGlView=" +
-                            reuseGlView);
+            DanmakuLoggers.i(TAG, "init texture id=" + danmaku.id
+                    + "\tloopTime=" + loopTime + "\t reuseGlView=" + reuseGlView);
         }
         return true;
     }
@@ -333,7 +332,7 @@ public class GLViewGroup {
         first.onDestroy();
         if (DEBUG_RELEASE) {
             BaseDanmaku data = (BaseDanmaku) first.getImgProvider().getData();
-            DanmakuLoggers.i(TAG, "release id=" + data.id);
+            DanmakuLoggers.i(TAG, "release id=" + data.id + " text = " + data.text);
         }
         mRemovedViews.offer(first);
         return true;
@@ -348,7 +347,7 @@ public class GLViewGroup {
             return;
         }
         if (DEBUG_ADD) {
-            DanmakuLoggers.i(TAG, "addDanmu id=" + danmaku.id);
+            DanmakuLoggers.i(TAG, "addDanmu id=" + danmaku.id + " text = " + danmaku.text);
         }
         mNewDanmaku.offer(danmaku);
     }
@@ -362,14 +361,16 @@ public class GLViewGroup {
             //gl线程
             if (DEBUG) {
                 BaseDanmaku data = (BaseDanmaku) ((GLView) view).getImgProvider().getData();
-                DanmakuLoggers.i(TAG, "removeView id=" + data.id);
+                DanmakuLoggers.i(TAG, "removeView id=" + data.id
+                        + " text = " + data.text);
             }
             //设置回收状态，在下一次绘制时会被移除
             ((GLView) view).setRecyclered(true);
         }
         if (view instanceof BaseDanmaku) {
             if (DEBUG) {
-                DanmakuLoggers.i(TAG, "removeView id=" + ((BaseDanmaku) view).id);
+                DanmakuLoggers.i(TAG, "removeView id=" + ((BaseDanmaku) view).id
+                        + " text = " + ((BaseDanmaku) view).text);
             }
             if (!mNewDanmaku.remove(view)) {
                 try {

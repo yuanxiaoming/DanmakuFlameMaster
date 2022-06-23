@@ -5,7 +5,7 @@ import master.flame.danmaku.danmaku.model.android.AndroidDisplayer;
 import master.flame.danmaku.danmaku.model.android.DanmakuContext;
 import master.flame.danmaku.danmaku.renderer.IRenderer;
 import master.flame.danmaku.danmaku.util.DanmakuUtils;
-import master.flame.danmaku.gl.glview.controller.TextureGLSurfaceViewRenderer;
+import master.flame.danmaku.gl.glview.controller.GLSurfaceViewRenderer;
 
 /**
  * 创建人:yangzhiqian
@@ -14,7 +14,7 @@ import master.flame.danmaku.gl.glview.controller.TextureGLSurfaceViewRenderer;
  */
 public class AndroidGLDisplayer extends AndroidDisplayer {
 
-    private TextureGLSurfaceViewRenderer mRenderer;
+    private GLSurfaceViewRenderer mRenderer;
 
     public AndroidGLDisplayer(DanmakuContext danmakuContext) {
         super(danmakuContext);
@@ -43,11 +43,11 @@ public class AndroidGLDisplayer extends AndroidDisplayer {
         }
     }
 
-    public void setRenderer(TextureGLSurfaceViewRenderer mRenderer) {
+    public void setRenderer(GLSurfaceViewRenderer mRenderer) {
         this.mRenderer = mRenderer;
     }
 
-    public TextureGLSurfaceViewRenderer getRenderer() {
+    public GLSurfaceViewRenderer getRenderer() {
         return mRenderer;
     }
 }

@@ -25,7 +25,7 @@ import master.flame.danmaku.danmaku.util.DanmakuLoggers;
 import master.flame.danmaku.danmaku.util.SystemClock;
 import master.flame.danmaku.gl.AndroidGLDisplayer;
 import master.flame.danmaku.gl.GLConstants;
-import master.flame.danmaku.gl.glview.controller.TextureGLSurfaceViewRenderer;
+import master.flame.danmaku.gl.glview.controller.GLSurfaceViewRenderer;
 import master.flame.danmaku.gl.wedget.GLHandlerSurfaceView;
 
 public class DanmakuGLSurfaceView extends GLHandlerSurfaceView
@@ -35,7 +35,7 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView
     private static final boolean DEBUG_DRAW = GLConstants.DEBUG_DANMAKUGLSURFACEVIEW_DRAW_STATUS;
     private static final int MAX_RECORD_SIZE = 50;
     private static final int ONE_SECOND = 1000;
-    private final TextureGLSurfaceViewRenderer mRenderer = new TextureGLSurfaceViewRenderer(this);
+    private final GLSurfaceViewRenderer mRenderer = new GLSurfaceViewRenderer(this);
     protected volatile DrawHandler handler;
     protected int mDrawingThreadType = THREAD_TYPE_NORMAL_PRIORITY;
     protected boolean mRequestRender = false;

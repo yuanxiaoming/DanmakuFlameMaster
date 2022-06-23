@@ -150,6 +150,12 @@ public class DanmakuContext implements Cloneable {
     public byte updateMethod = 0;
 
     /**
+     * false 默认 清除弹幕缓存等待30毫秒 <br />
+     * 去除CacheManagingDrawTask清除弹幕缓存等待30毫秒
+     */
+    public boolean mDrawingNotifyImmediately = false;
+
+    /**
      * set typeface
      *
      * @param font
@@ -669,6 +675,11 @@ public class DanmakuContext implements Cloneable {
 
     public DanmakuContext setCachingPolicy(CachingPolicy cachingPolicy) {
         this.cachingPolicy = cachingPolicy;
+        return this;
+    }
+
+    public DanmakuContext setDrawingNotifyImmediately(boolean drawingNotifyImmediately) {
+        this.mDrawingNotifyImmediately = drawingNotifyImmediately;
         return this;
     }
 

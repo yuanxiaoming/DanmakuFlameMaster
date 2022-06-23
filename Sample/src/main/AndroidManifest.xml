@@ -30,7 +30,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".BiliDanmaActivity" />
+        <activity android:name=".BiliDanmaActivity"
+            android:screenOrientation="landscape"
+            />
     </application>
 
 </manifest>

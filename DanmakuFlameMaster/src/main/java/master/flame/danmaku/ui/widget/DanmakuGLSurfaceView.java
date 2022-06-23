@@ -441,8 +441,10 @@ public class DanmakuGLSurfaceView extends GLHandlerSurfaceView
         if (DEBUG) {
             DanmakuLoggers.d(TAG, "start");
         }
-        show();
-        resume();
+        if (mRenderer != null) {
+            mRenderer.show();
+        }
+        onResume();
         start(0);
     }
 

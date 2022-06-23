@@ -10,8 +10,8 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -233,8 +233,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         // VideoView
         VideoView mVideoView = (VideoView) findViewById(R.id.videoview);
-        // DanmakuView
 
+        // DanmakuView
         // 设置最大显示行数
         HashMap<Integer, Integer> maxLinesPair = new HashMap<Integer, Integer>();
         maxLinesPair.put(BaseDanmaku.TYPE_SCROLL_RL, 5); // 滚动弹幕最大显示5行
@@ -253,7 +253,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 //.setCacheStuffer(new BackgroundCacheStuffer())
                 // 绘制背景使用BackgroundCacheStuffer
                 .setMaximumLines(maxLinesPair)
-                .setAllowDelayInCacheModel(true)
+                .setAllowDelayInCacheModel(false)
+                .alignBottom(true)
                 .preventOverlapping(overlappingEnablePair).setDanmakuMargin(40);
 
         if (mDanmakuView != null) {
@@ -324,7 +325,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     mediaPlayer.start();
                 }
             });
-            mVideoView.setVideoPath(Environment.getExternalStorageDirectory() + "/1.flv");
+            mVideoView.setVideoURI(
+                    Uri.parse(
+                            "http://lxcode.bs2cdn.yy.com/28ccd4f7-d651-4f6d-b72b-dd3a1f5bf3f6.mp4"));
         }
 
     }
@@ -454,7 +457,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void addDanmaKuShowTextAndImage(boolean islive) {
         BaseDanmaku danmaku =
-                mDanmakuContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL);
+                mDanmakuContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_FIX_BOTTOM);
         Drawable drawable = getResources().getDrawable(R.drawable.ic_launcher);
         drawable.setBounds(0, 0, 100, 100);
         SpannableStringBuilder spannable = createSpannable(drawable);

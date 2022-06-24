@@ -575,8 +575,10 @@ public class GLDrawTask extends DrawTask {
                     return false;
                 }
                 item.mGLTextureId = GLUtils.createBitmapTexture2D(holder.bitmap);
-                item.paintWidth = holder.bitmap.getWidth();
-                item.paintHeight = holder.bitmap.getHeight();
+                if (item.paintWidth == 0 || item.paintHeight == 0) {
+                    item.paintWidth = holder.bitmap.getWidth();
+                    item.paintHeight = holder.bitmap.getHeight();
+                }
                 if (item.mGLTextureId != 0) {
                     //已经成功创建了纹理，可以删除bitmap缓存了
                     destroyCache(item, false);

@@ -251,7 +251,6 @@ public class BiliDanmaActivity extends Activity implements View.OnClickListener 
                 Toast.makeText(getApplicationContext(), "SSS", Toast.LENGTH_SHORT).show();
             }
         });
-        viewById.setText(String.valueOf(TYPE_DANMAKU_VIEW));
 
         // VideoView
         VideoView mVideoView = (VideoView) findViewById(R.id.videoview);
@@ -266,12 +265,16 @@ public class BiliDanmaActivity extends Activity implements View.OnClickListener 
         overlappingEnablePair.put(BaseDanmaku.TYPE_FIX_TOP, true);
         if (mDanmakuType == TYPE_DANMAKU_VIEW) {
             mDanmakuView = new DanmakuView(getApplicationContext());
+            viewById.setText("DanmakuView");
         } else if (mDanmakuType == TYPE_DANMAKU_GL_VIEW) {
             mDanmakuView = new DanmakuGLSurfaceView(getApplicationContext());
+            viewById.setText("DanmakuGLSurfaceView");
         } else if (mDanmakuType == TYPE_DANMAKU_SURFACE_VIEW) {
             mDanmakuView = new DanmakuSurfaceView(getApplicationContext());
+            viewById.setText("DanmakuSurfaceView");
         } else if (mDanmakuType == TYPE_DANMAKU_TEXTURE_VIEW) {
             mDanmakuView = new DanmakuTextureView(getApplicationContext());
+            viewById.setText("DanmakuTextureView");
         }
 
         rootView.addView((View) mDanmakuView, new LayoutParams(MATCH_PARENT, MATCH_PARENT));
@@ -287,7 +290,8 @@ public class BiliDanmaActivity extends Activity implements View.OnClickListener 
                 .setMaximumLines(maxLinesPair)
                 .setAllowDelayInCacheModel(false)
                 .alignBottom(true)
-                .preventOverlapping(overlappingEnablePair).setDanmakuMargin(40);
+                .preventOverlapping(overlappingEnablePair)
+                .setDanmakuMargin(40);
 
         if (mDanmakuView != null) {
             if (mDanmakuView instanceof SurfaceView) {

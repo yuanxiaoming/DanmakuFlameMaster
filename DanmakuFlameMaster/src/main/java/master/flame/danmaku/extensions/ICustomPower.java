@@ -18,4 +18,6 @@ public interface ICustomPower {
     //是否需要动态刷新
     boolean needInvalidate();
 
+    void clear();
+
 }
